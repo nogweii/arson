@@ -263,13 +263,16 @@ def in_pacman_sync?(name, syncd)
 	return true if Dir["#{syncd}/#{name}-*"].first
 end
 def pacman_check_aur_updates
+	puts "Checking if any foreign packages have updates available in AUR" if $Options[:verbose]
 	found_toggle = false
 	`pacman -Qm`.each_line do |line|
 		name, version = line.chomp.split
-		aur = JSON.parse(open("http://aur.archlinux.org/rpc.php?type=info&arg=#{name}").read)['results']
+		aur = json_open(Aur_Info % name)['results']
 		if aur.kind_of?(Hash) and aur['Version'] != version
 			found_toggle = true
-			puts "#{colorful(name,:bold)} has an update available: #{colorful(version,:red)} -> #{colorful(aur['Version'],:green)}"
+			instver = VersionNumber.new(version)
+			aurver = VersionNumber.new(aur['Version'])
+			puts "#{colorful(name,:bold)} has an update available: #{colorful(version,:red)} -> #{colorful(aur['Version'],:green)}" if aurver > instver
 		end
 	end
 	unless found_toggle
