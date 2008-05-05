@@ -1,0 +1,122 @@
+arson v0.8.3 (30April2008)
+- Gah. I still didn't fix -U/--upgrade. Now it actually runs! [Thanks once
+more rson451]
+- Modified pacman_check_aur_updates to use colorful() and VersionNumber. Now
+it only alerts you if there's is an upgrade, not a downgrade:
+<ruby-bdb has an update available: 0.6.2-1 -> 0.5.9-1> No more!
+- Changed the download code some more. Now it doesn't delete files that have
+the same name as the package name (arson, aiccu are examples of this) [Thanks
+again benito]
+
+arson v0.8.2 (29April2008)
+- Stupid me. When checking the keyword count for commands, I wanted to exclude
+:upgrade. I put :update instead. Fixed. (Thanks rson451)
+- Changed minitar to extract instead to /pkg/pkg/[files] to instead
+/pkg/[files]
+- Stopped including ToDo with the distribution. Added ToDo: Move contents of
+ToDo to the Remember the Milk public Todo.
+
+arson v0.8.1 (28April2008)
+- Bugfix release :/
+- Removed the {{{ & }}} folding markers, now I use the syntax markers. Makes 
+the comments themselves much easier to read :)
+- When using open(http://) arson now uses the same method of retriving the
+results (#read instead of #string which only worked sometimes) -Thanks again,
+rson451! :)
+- arson only displays search results if the package is in AUR. Community
+packages can still be downloaded via -D (though, what's the point when pacman
+is just as able, if not more so?)
+- The tar.gz file is deleted by default now. Changed the -x/--delete option to
+-k/--keep to reflect this. Still only if Facets/Archive/Tar/Minitar is
+installed (which it is when installing arson for the first time)
+- Nobody complained about this, oddly enough. arson.install said it was
+installing the Minitar gem when it actually wasn't. Now it doesn't ;)
+- arson called without a -COMMAND provides the --help output along with the
+'error' message -Thanks [vEX]
+- arson now checks if a foreign package (according to pacman) has an update in
+AUR - Thanks benito, hope you don't mind that I copied & pasted your code :)
+Call -U/--upgrade to see a list
+- No longer stops downloading packages when 1 isn't found. - Thanks rson451
+- Fixed keyword check, now it excludes :upgrade
+- Better error message when calling an invalid option
+
+arson v0.8 (11April2008)
+- I'm the energizer bunny! I keep going and going with arson!
+- Fixed colorful() error when not providing any keywords
+- Now checks if the extraction target already exists
+- Added -f/--force option to skip check
+- Added warning when you use more than 1 command (for rson451)
+- Added Magenta color to the 'crew'! Welcome! lol
+- Added minitar gem install, I completley missed that there /was/ a gem!
+- Minitar gem is now installed during the first install. Upgraders, run 'gem
+install archive-tar-minitar"
+- PKGBUILD build() now uses install instead of cp/mkdir
+- Added --more-help option, removed note about minitar, see --more-help for
+info about installing the minitar gem. If anything else strikes me as useful
+for day-to-day use of arson, I may stick it in --more-help or just start a man
+page. Dunno if --more-help is here to stay. Enjoy?
+- Added color output to help. This is the longest changelog I've written. Fun
+- 'arson -D pkg1 pkg2' now downloads both pkg1 and pkg2!
+- Multiple pkg info provided when -I is passed multiple packages. (Same vein
+as above)
+- Skipping 0.7 and going straight for 0.8 cause I feel this is many releases
+delayed into 1
+- Added OutOfDate checks to -I, -D, -S. Version numbers in Search reaults are
+in red if the package is marked out of date, arson now warns you about downloading
+an out of date package, and -I is the same, but it now WORKS (as per the fix
+above)
+- Prevented a possible bug where a user didn't have tput in $PATH. Instead of
+calling just tput, it calls the full path (/bin/tput)
+- Now provides (not) installed/upgradable info in Search and Info output!
+- If a package is in the community repo, Search tells you (so it's community/
+instead of aur/) and Download exits into pacman, to avoid the HTML page
+download which some users have run into.
+- Added Facets as a dependency, it get installed along with arson. This has SO
+MUCH STUFF IN IT!
+- Facets includes Archive::Tar::Minitar in it's EXTRA libraries. Removed
+-e/--dont-extract cli option, removed archive-tar-minitar as a dependency
+- Facets includes an ANSICode class, allowing pretty shell output, with full
+support for all the effects! Removed tput/ncurses dependency.
+
+arson v0.6.3 (31March2008)
+- Switched from using ruby-terminfo to calling /usr/bin/tput. This should work
+for sure now, for those who want color and haven't been getting it yet.
+- Added Info command (-I, --Info), it's simply a JSON dump. Nice though for
+extensive details on any given package.
+- Uploaded arson as arson.tar.gz instead of the name makepkg gave it,
+hopefully the URLPath bug will stop now.
+- Gracefull handling of invalid arguments
+- With the switch to tput vs ruby-terminfo, removed ruby-terminfo dependecy
+and added ncurses dependency. Now it's mandatory. YOU WILL HAVE COLOR!
+- PKGBUILD finally updated correctly; stick the .install script name in
+install=()!
+
+arson v0.6.2 (30March2008)
+- Added more verbosity, of course only when it's on
+- More errors. Didn't report if you tried to download a non-existent package.
+- Fixed --save-to not having any effect. (oops)
+- Fixed the "<<: Can't convert nil to string" error when trying to run it
+without color output enabled
+- Re-added arson.install to the sources=() list. Apparently makepkg doesn't
+include automattically. Huh.
+
+arson v0.6.1 (30March2008)
+- More PKGBUILD fixes. Oops!
+- Changed the output a bit 
+
+arson v0.6 (30March2008)
+- Added color output + switch. Uses termcap so it's 'smart' already. I don't
+expect many people would use the switch. It's there for those who want to
+(i.e. feeding it through grep safely)
+- Added tarball deletion switch. By default, arson doesn't delete the .tar.gz,it just moves it to the extracted directon
+- The verbose switch actually does something now!
+- Color output is EVERYWHERE! Yay :D
+- Fixed PKGBUILD and arson.install, it now warns you about the gem (thanks
+bender02)
+- Set the default directory for --save-to to the current directory, now it's
+an optional parameter (thanks venox, bender02)
+- Added optional dependency for ruby-terminfo http://www.a-k-r.org/ruby-terminfo/
+- Started this changelog
+
+arson v0.5.14 (28March2008)
+- Initial Upload

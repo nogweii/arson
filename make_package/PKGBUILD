@@ -1,0 +1,22 @@
+# Contributor: Colin Shea <friar.foaly@gmail.com>
+pkgname=arson
+pkgver=0.8.2
+pkgrel=1
+pkgdesc="The HOT AUR search helper!"
+arch=(i686 x86_64)
+url="http://bbs.archlinux.org/viewtopic.php?pid=348138"
+license=('GPL')
+source=($pkgname ChangeLog)
+md5sums=('f9832c33770eaa030e85c163d63c8813'
+         '2b78803646742331efd4c73e39e50f50')
+depends=('ruby' 'rubygems')
+install='arson.install'
+
+build() {
+  cd "$srcdir"
+  install -d $startdir/pkg/usr/share/doc/$pkgname $startdir/pkg/usr/bin
+  install -t $startdir/pkg/usr/share/doc/$pkgname ChangeLog
+  install -t $startdir/pkg/usr/bin arson
+}
+
+# vim:set ts=2 sw=2 et:

@@ -1,0 +1,305 @@
+#!/usr/bin/env ruby
+
+# AUR search program. Uses the RPC/JSON interface to query the db. Requires
+# rubygems and the JSON gem
+
+# {{{ Require statements
+require 'optparse'
+require 'pp'
+require 'cgi'
+require 'open-uri'
+require 'pathname'
+require 'ftools'
+require 'zlib'
+require 'rubygems'
+require 'json/add/core' # Adds useful methods to Ruby's core libs
+require 'facets'
+require 'facets/version'
+require 'facets/minitar'
+require 'facets/ansicode'
+
+ARSON_VERSION = [0, 8, 3]
+# Loui's AUR: "http://aur.louipc.yi.org/"
+# He has a bunch of fixes already, useful to test arson against any seriously new changes
+#Aur_Domain = "http://aur.louipc.yi.org/"
+Aur_Domain = "http://aur.archlinux.org"
+Aur_Search = "#{Aur_Domain}/rpc.php?type=search&arg=%s"
+Aur_Info = "#{Aur_Domain}/rpc.php?type=info&arg=%s"
+Pacman_Local_Cache = "/var/lib/pacman/local"
+Pacman_Local_Sync = "/var/lib/pacman/sync/%s"
+
+$Options = {}
+def opt_parse(args)
+	OptionParser.new do |op|
+		op.banner = "arson v#{ARSON_VERSION.join('.')} - The #{colorful('HOT',:red)} AUR search helper!"
+		op.separator "Usage: #{colorful('arson',:bold)} [options] -COMMAND KEYWORD1 [KEYWORD2 ...]"
+	
+		op.separator "Where -COMMAND is one of:"
+		op.on("-D", "--Download", "Download the AUR package specified") do |c|
+			puts colorful("Warning: ",:magenta,:bold) + colorful("#{$Options[:command].to_s.capitalize} command already given, ignoring '-S'",:magenta) if $Options[:command]
+			$Options[:command] ||= :download
+		end
+		op.on("-S", "--Search", "Search AUR for a package name") do |s|
+			puts colorful("Warning: ",:magenta,:bold) + colorful("#{$Options[:command].to_s.capitalize} command already given, ignoring '-S'",:magenta) if $Options[:command]
+			$Options[:command] ||= :search
+		end
+		op.on("-I", "--Info", "Get information about a package") do |i|
+			puts colorful("Warning: Command #{$Options[:command].capitalize} already given, ignoring '-I'",:magenta) if $Options[:command]
+			$Options[:command] ||= :info
+		end
+		op.on("-U", "--Upgrade", "List of foreign packages which have an update available for them in AUR") do |u|
+			puts colorful("Warning: Command #{$Options[:command].capitalize} already given, ignoring '-U'",:magenta) if $Options[:command]
+			$Options[:command] ||= :upgrade
+		end
+
+		op.separator ""
+		op.separator "Download options"
+		op.on("--save-to [PATH]", "Directory for arson to download AUR packages [Default: #{colorful('Current directory',:magenta)}]") do |h|
+			h = (h[0...1] == "/" ? h : "#{Dir.pwd}/#{h}")
+			if File.exists? h
+				# JIC someone provides a link
+				$Options[:download_dir] = Pathname.new(h).realpath
+			else
+				puts "Error: #{h} doesn't exist! Please choose a directory that already exists"
+				exit 1
+			end
+		end
+		op.on("-k", "--keep", "Keep the .tar.gz after extracting it [Default: #{colorful('Delete',:magenta)}]") do |x|
+			$Options[:no_delete] = x
+		end
+		op.on("-f", "--force", "Force the extraction of the package") do |f|
+			$Options[:force] = f
+		end
+
+		op.separator ""
+		op.separator "Generic options"
+		# Color options -x --[no-]color
+		op.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+			$Options[:verbose] = v
+		end
+		op.on("-c", "--no-color", "Supress color output [Default: #{colorful('No',:magenta)}]") do |c|
+			$Options[:no_color] = !c
+		end
+		op.on_tail("-V", "--version", "Display the version number") do |v|
+			puts "arson v#{ARSON_VERSION.join('.')}"
+			exit 0
+		end
+		op.on_tail("-h", "--help", "Display this help message") do |h|
+			puts op
+			exit 0
+		end
+		op.on_tail("--more-help", "Display even more help") do |mh|
+			puts <<EOMHELP
+To install all the dependencies (optional or not) of arson, run the following:
+	gem install facets json
+EOMHELP
+			exit 0
+		end
+	end.parse!(args)
+	# Extra option logic
+	unless $Options[:command]
+		puts colorful("You need to specify a command!",:red)
+		opt_parse(["-h"])
+		exit 1
+	end
+	unless $Options[:download_dir]
+		$Options[:download_dir] = Pathname.new(Dir.pwd).realpath
+	end
+end
+#pp options
+#pp ARGV
+def colorful(string, *effects)
+	unless $Options[:no_color]
+		colored = " "
+		effects.each do |ef|
+			colored << "#{ANSICode.send(ef)}"
+		end
+		colored << string << "#{ANSICode.clear}"
+		colored[1..-1]
+	else
+		string
+	end
+end
+def json_open(url)
+	JSON.parse(open(url).read)
+end
+def aur_search(keywords)
+	puts "Searching for '#{keywords}'..." if $Options[:verbose]
+	list = aur_list(CGI::escape(keywords))
+	puts "Found #{colorful(list.length.to_s,:magenta)} results"
+	list.each do |values|
+		info = json_open(Aur_Info % values[1])
+		unless info['type'] == 'error'
+			info = info['results']
+			version = colorful(info['Version'],:bold)
+			version = colorful(info['Version'],:bold,:red) if info['OutOfDate'] == '1'
+			install_stat = pacman_cache_check(info['Name'],info['Version'])
+			repo = "aur"
+			next if in_pacman_sync?(info['Name'],"community")
+			puts "[#{colorful(install_stat,:underline,:cyan)}] #{colorful("#{repo}/#{info['Name']}",:bold,:blue)} (#{version}): #{info['Description']}"
+		else
+			puts colorful("Error: #{info['results']} for package ID #{values[0]}",:red)
+		end
+	end
+end
+def aur_download(packages)
+	puts "Downloading package#{packages.length > 1 ? 's' : ''} #{packages.join(', ')} to #{colorful($Options[:download_dir],:bold,:magenta)}"
+	packages.each do |pkg|
+	list = aur_list(pkg)
+	list.each do |names|
+		if names[0] == pkg
+			# Download code
+			info = json_open(Aur_Info % names[1])['results']
+			puts "Download URL: #{colorful(Aur_Domain+info['URLPath'],:green)}" if $Options[:verbose]
+			puts "#{colorful('WARNING',:red,:bold)}: You are about to download #{colorful(pkg,:bold)}, which has been flagged #{colorful('out of date',:magenta)}!" if info['OutOfDate'] == '1'
+			pp info if $Options[:verbose]
+FileUtils.chdir($Options[:download_dir]) do |dir|
+		begin
+			if in_pacman_sync? pkg, "community"
+				puts "Found package #{colorful(pkg,:bold)} in the community repo. Executing pacman..."
+				exec "sudo pacman -S #{pkg}"
+			else
+				puts "Found package #{colorful(pkg,:bold)}! Downloading it now..."
+				open("#{Aur_Domain}/#{info['URLPath']}") do |tar|
+				# Write the stream to a file, b is JIC
+					File.open("#{dir}/#{pkg}.tar.gz", "wb") do |file|
+						puts colorful("Downloading #{pkg}",:blue) if $Options[:verbose]
+						file.write(tar.read)
+					end
+				end
+			end
+		rescue OpenURI::HTTPError => e
+			puts colorful("Error downloading #{pkg}: #{e.message}",:red)
+			exit 1
+		end
+		puts colorful("Extracting #{pkg}.tar.gz",:blue) if $Options[:verbose]
+		# Extract the archive
+		unless File.exists?(pkg) or $Options[:force]
+			tgz = Zlib::GzipReader.new(File.open("#{pkg}.tar.gz", 'rb'))
+			# Extract pkg.tar.gz to `pwd`, instead of `pwd`/pkg
+			Archive::Tar::Minitar.unpack(tgz, Dir.pwd)
+
+			# Checking if pkg.tar.gz is marked to be deleted
+			if $Options[:no_delete]
+				FileUtils.mv "#{pkg}.tar.gz", pkg
+			else
+				FileUtils.rm "#{pkg}.tar.gz"
+			end
+
+		else
+			puts colorful("Error: #{pkg} already exists. Pass -f to skip this check", :red)
+			exit 1
+		end
+end
+
+		else
+			puts colorful("Error: No package named '#{pkg}' found",:red)
+			#exit 1
+		end
+	end
+	end
+end
+def aur_list(name)
+	json = json_open(Aur_Search % CGI::escape(name))
+	list = []
+
+	if json['type'] == 'error'
+		puts colorful("Error: #{json['results']}",:red)
+		exit 1
+	end
+	json['results'].each do |aurp|
+		list << [aurp["Name"], aurp['ID']]
+	end
+	list
+end
+def aur_info(names)
+	names.each do |name|
+	puts "Getting package info for #{colorful(name,:red)}" if $Options[:verbose]
+	aur_list(name).each do |pkg|
+		if pkg[0] == name
+			json = json_open(Aur_Info % pkg[1])['results']
+			not_ood = (json['OutOfDate'] == '0' ? 'isn\'t' : colorful('is',:red))
+			# Not installed
+			inst_upg_info = "is #{colorful('not installed',:green,:bold)} on your system" if pacman_cache_check(json['Name'],json['Version']) == 'N'
+			# Installed
+			inst_upg_info = "is #{colorful('installed',:green)} on your system" if pacman_cache_check(json['Name'],json['Version']) == 'I'
+			# Upgradable
+			inst_upg_info = "has an #{colorful('upgrade',:blue)} available" if pacman_cache_check(json['Name'],json['Version']) == 'U'
+
+			puts <<EOINFO
+#{colorful(json['Name'],:blue,:bold)} (#{colorful(json['Version'],:bold)}) #{json['Description']}
+#{json['URL']}
+Released under the '#{colorful(json['License'],:green)}' license. Received #{colorful(json['NumVotes'],:green)} votes. It #{not_ood} out of date.
+#{json['Name']} #{inst_upg_info}
+
+EOINFO
+		end
+	end
+	end
+end
+def pacman_cache_check(name, version, cached = Pacman_Local_Cache)
+	puts "Checking installation status of #{name}, v#{version}" if $Options[:verbose]
+	if File.exists? "#{cached}/#{name}-#{version}"
+		return 'I'
+	else
+		Dir.chdir(cached) do
+			installed = Dir["#{name}-*"].first
+			if installed
+				iv = VersionNumber.new(installed[name.length+1..-1])
+				pccv = VersionNumber.new(version)
+				if iv > pccv
+					return 'I'
+				elsif pccv > iv
+					return 'U'
+				end
+			else
+				return 'N'
+			end
+		end
+	end
+end
+def in_pacman_sync?(name, syncd)
+	syncd = Pacman_Local_Sync % syncd
+	return true if Dir["#{syncd}/#{name}-*"].first
+end
+def pacman_check_aur_updates
+	found_toggle = false
+	`pacman -Qm`.each_line do |line|
+		name, version = line.chomp.split
+		aur = JSON.parse(open("http://aur.archlinux.org/rpc.php?type=info&arg=#{name}").read)['results']
+		if aur.kind_of?(Hash) and aur['Version'] != version
+			found_toggle = true
+			puts "#{colorful(name,:bold)} has an update available: #{colorful(version,:red)} -> #{colorful(aur['Version'],:green)}"
+		end
+	end
+	unless found_toggle
+		puts "All foreign packages are up to date."
+	end
+end
+
+trap(:INT) { exit 0 } # Exit gracefully
+
+begin # opt_parse call
+	opt_parse(ARGV)
+rescue OptionParser::InvalidOption => e
+	puts colorful("#{e.to_s.capitalize}. Please use only the following:",:red)
+	opt_parse(["-h"])
+end
+
+if ARGV.size < 1 and $Options[:command] != :upgrade
+	puts "#{colorful('No keywords found!',:red)} Try using only alphanumeric characters for your keywords."
+	opt_parse(["-h"]) # Force the help message to be displayed
+end
+
+pp ARGV if $Options[:verbose]
+pp $Options if $Options[:verbose]
+
+if $Options[:command] == :search
+	aur_search(ARGV.join(' '))
+elsif $Options[:command] == :download
+	aur_download(ARGV)
+elsif $Options[:command] == :info
+	aur_info(ARGV)
+elsif $Options[:command] == :upgrade
+	pacman_check_aur_updates;
+end
