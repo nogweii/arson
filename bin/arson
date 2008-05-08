@@ -263,13 +263,16 @@ def in_pacman_sync?(name, syncd)
 	return true if Dir["#{syncd}/#{name}-*"].first
 end
 def pacman_check_aur_updates
+	puts "Checking if any foreign packages have updates available in AUR" if $Options[:verbose]
 	found_toggle = false
 	`pacman -Qm`.each_line do |line|
 		name, version = line.chomp.split
-		aur = JSON.parse(open("http://aur.archlinux.org/rpc.php?type=info&arg=#{name}").read)['results']
+		aur = json_open(Aur_Info % name)['results']
 		if aur.kind_of?(Hash) and aur['Version'] != version
 			found_toggle = true
-			puts "#{colorful(name,:bold)} has an update available: #{colorful(version,:red)} -> #{colorful(aur['Version'],:green)}"
+			instver = VersionNumber.new(version)
+			aurver = VersionNumber.new(aur['Version'])
+			puts "#{colorful(name,:bold)} has an update available: #{colorful(version,:red)} -> #{colorful(aur['Version'],:green)}" if aurver > instver
 		end
 	end
 	unless found_toggle
@@ -277,29 +280,32 @@ def pacman_check_aur_updates
 	end
 end
 
-trap(:INT) { exit 0 } # Exit gracefully
 
-begin # opt_parse call
-	opt_parse(ARGV)
-rescue OptionParser::InvalidOption => e
-	puts colorful("#{e.to_s.capitalize}. Please use only the following:",:red)
-	opt_parse(["-h"])
-end
+if $0 == __FILE__
+	trap(:INT) { exit 0 } # Exit gracefully
 
-if ARGV.size < 1 and $Options[:command] != :upgrade
-	puts "#{colorful('No keywords found!',:red)} Try using only alphanumeric characters for your keywords."
-	opt_parse(["-h"]) # Force the help message to be displayed
-end
+	begin # opt_parse call
+		opt_parse(ARGV)
+	rescue OptionParser::InvalidOption => e
+		puts colorful("#{e.to_s.capitalize}. Please use only the following:",:red)
+		opt_parse(["-h"])
+	end
 
-pp ARGV if $Options[:verbose]
-pp $Options if $Options[:verbose]
+	if ARGV.size < 1 and $Options[:command] != :upgrade
+		puts "#{colorful('No keywords found!',:red)} Try using only alphanumeric characters for your keywords."
+		opt_parse(["-h"]) # Force the help message to be displayed
+	end
 
-if $Options[:command] == :search
-	aur_search(ARGV.join(' '))
-elsif $Options[:command] == :download
-	aur_download(ARGV)
-elsif $Options[:command] == :info
-	aur_info(ARGV)
-elsif $Options[:command] == :upgrade
-	pacman_check_aur_updates;
+	pp ARGV if $Options[:verbose]
+	pp $Options if $Options[:verbose]
+
+	if $Options[:command] == :search
+		aur_search(ARGV.join(' '))
+	elsif $Options[:command] == :download
+		aur_download(ARGV)
+	elsif $Options[:command] == :info
+		aur_info(ARGV)
+	elsif $Options[:command] == :upgrade
+		pacman_check_aur_updates;
+	end
 end
