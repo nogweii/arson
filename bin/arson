@@ -24,7 +24,7 @@ end
       require lib
 end
 
-ARSON_VERSION = [0, 8, 4]
+ARSON_VERSION = [0, 8, 5]
 # Loui's AUR: "http://aur.louipc.yi.org/"
 # He has a bunch of fixes already, useful to test arson against any seriously new changes
 #Aur_Domain = "http://aur.louipc.yi.org/"
