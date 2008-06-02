@@ -3,22 +3,28 @@
 # AUR search program. Uses the RPC/JSON interface to query the db. Requires
 # rubygems and the JSON gem
 
-# {{{ Require statements
-require 'optparse'
-require 'pp'
-require 'cgi'
-require 'open-uri'
-require 'pathname'
-require 'ftools'
-require 'zlib'
-require 'rubygems'
-require 'json/add/core' # Adds useful methods to Ruby's core libs
-require 'facets'
-require 'facets/version'
-require 'facets/minitar'
-require 'facets/ansicode'
+if ARGV.include? "beta"
+	require 'rubygems'
+	require 'ruby-prof'
+	RubyProf.measure_mode = RubyProf::WALL_TIME 
+	RubyProf.start
+	at_exit {
+		result = RubyProf.stop
+		printer = RubyProf::GraphHtmlPrinter.new(result)
+		printer.print(File.open("profile.html", "w"))
+	}
+	ARGV.slice!(ARGV.index("beta"))
+end
 
-ARSON_VERSION = [0, 8, 3]
+
+# {{{ Require statements
+%w{optparse pp cgi open-uri pathname ftools zlib rubygems json/add/core 
+   facets facets/version facets/minitar facets/ansicode ferret
+   }.each do |lib|
+      require lib
+end
+
+ARSON_VERSION = [0, 8, 4]
 # Loui's AUR: "http://aur.louipc.yi.org/"
 # He has a bunch of fixes already, useful to test arson against any seriously new changes
 #Aur_Domain = "http://aur.louipc.yi.org/"
@@ -91,7 +97,7 @@ def opt_parse(args)
 		op.on_tail("--more-help", "Display even more help") do |mh|
 			puts <<EOMHELP
 To install all the dependencies (optional or not) of arson, run the following:
-	gem install facets json
+	gem install facets json ferret
 EOMHELP
 			exit 0
 		end
@@ -123,24 +129,47 @@ end
 def json_open(url)
 	JSON.parse(open(url).read)
 end
-def aur_search(keywords)
-	puts "Searching for '#{keywords}'..." if $Options[:verbose]
-	list = aur_list(CGI::escape(keywords))
-	puts "Found #{colorful(list.length.to_s,:magenta)} results"
+def aur_search(keyword, filter=nil)
+	puts "Searching for '#{keyword}'#{' with filter ' + filter if filter}..." if $Options[:verbose]
+	list = aur_list(CGI::escape(keyword))
+	index = Ferret::Index::Index.new(:default_field => "*")
 	list.each do |values|
 		info = json_open(Aur_Info % values[1])
 		unless info['type'] == 'error'
 			info = info['results']
-			version = colorful(info['Version'],:bold)
-			version = colorful(info['Version'],:bold,:red) if info['OutOfDate'] == '1'
-			install_stat = pacman_cache_check(info['Name'],info['Version'])
-			repo = "aur"
-			next if in_pacman_sync?(info['Name'],"community")
-			puts "[#{colorful(install_stat,:underline,:cyan)}] #{colorful("#{repo}/#{info['Name']}",:bold,:blue)} (#{version}): #{info['Description']}"
+			index << info
+			#puts "Added #{values[0]} | #{info.class}"
 		else
 			puts colorful("Error: #{info['results']} for package ID #{values[0]}",:red)
 		end
 	end
+	if filter
+		docs = []
+		index.search_each(filter) do |doc, score|
+			docs << index[doc]
+		end
+		puts "Found #{colorful(docs.length.to_s,:magenta)} results"
+		docs.each do |doc|
+			version = colorful(doc[:Version],:bold)
+			version = colorful(doc[:Version],:bold,:red) if doc[:OutOfDate] == '1'
+			install_stat = pacman_cache_check(doc[:Name],doc[:Version])
+			repo = "aur"
+			next if in_pacman_sync?(doc[:Name],"community")
+			puts "[#{colorful(install_stat,:underline,:cyan)}] #{colorful("#{repo}/#{doc[:Name]}",:bold,:blue)} (#{version}): #{doc[:Description]}"
+		end
+	else
+		puts "Found #{colorful(index.size.to_s,:magenta)} results"
+		index.size.times do |i|
+			doc = index[i]
+			version = colorful(doc[:Version],:bold)
+			version = colorful(doc[:Version],:bold,:red) if doc[:OutOfDate] == '1'
+			install_stat = pacman_cache_check(doc[:Name],doc[:Version])
+			repo = "aur"
+			next if in_pacman_sync?(doc[:Name],"community")
+			puts "[#{colorful(install_stat,:underline,:cyan)}] #{colorful("#{repo}/#{doc[:Name]}",:bold,:blue)} (#{version}): #{doc[:Description]}"
+		end
+	end
+
 end
 def aur_download(packages)
 	puts "Downloading package#{packages.length > 1 ? 's' : ''} #{packages.join(', ')} to #{colorful($Options[:download_dir],:bold,:magenta)}"
@@ -174,7 +203,7 @@ FileUtils.chdir($Options[:download_dir]) do |dir|
 		end
 		puts colorful("Extracting #{pkg}.tar.gz",:blue) if $Options[:verbose]
 		# Extract the archive
-		unless File.exists?(pkg) or $Options[:force]
+		if check_existence(pkg)
 			tgz = Zlib::GzipReader.new(File.open("#{pkg}.tar.gz", 'rb'))
 			# Extract pkg.tar.gz to `pwd`, instead of `pwd`/pkg
 			Archive::Tar::Minitar.unpack(tgz, Dir.pwd)
@@ -183,7 +212,7 @@ FileUtils.chdir($Options[:download_dir]) do |dir|
 			if $Options[:no_delete]
 				FileUtils.mv "#{pkg}.tar.gz", pkg
 			else
-				FileUtils.rm "#{pkg}.tar.gz"
+				FileUtils.rm "#{pkg}.tar.gz" if File.exists? "#{pkg}.tar.gz"
 			end
 
 		else
@@ -210,7 +239,7 @@ def aur_list(name)
 	json['results'].each do |aurp|
 		list << [aurp["Name"], aurp['ID']]
 	end
-	list
+	list.sort
 end
 def aur_info(names)
 	names.each do |name|
@@ -279,6 +308,15 @@ def pacman_check_aur_updates
 		puts "All foreign packages are up to date."
 	end
 end
+def check_existence(pkg)
+	puts "Checking existence of #{colorful(pkg,:blue)}/" if $Options[:verbose]
+	return true if $Options[:force]
+	if File.exists? pkg
+		return false
+	else
+		return true
+	end
+end
 
 
 if $0 == __FILE__
@@ -300,7 +338,12 @@ if $0 == __FILE__
 	pp $Options if $Options[:verbose]
 
 	if $Options[:command] == :search
-		aur_search(ARGV.join(' '))
+		filter = nil
+		if ARGV.length > 1
+			filter = ARGV[ARGV.length-1]
+			ARGV.pop
+		end
+		aur_search(ARGV.join(' '), filter)
 	elsif $Options[:command] == :download
 		aur_download(ARGV)
 	elsif $Options[:command] == :info

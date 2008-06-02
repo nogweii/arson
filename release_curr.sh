@@ -2,13 +2,15 @@
 
 # Using the files currently in the directory, this script tars up all the files into 2: arson-<version>.tar.bz2 and arson.tar.gz. arson-<version> has the core distribution while arson.tar.gz is a file ready to upload to AUR.
 
-mkdir release
+if [ ! -d release ] ; then
+	mkdir release
+fi
 cd release
 Arson_Version=$(ruby -e"load '../bin/arson'; puts ARSON_VERSION.join('.')")
 
 # Mkdir for core
 mkdir arson
-cp ../bin/arson ../ChangeLog -t arson/
+cp ../bin/arson ../ChangeLog ../contrib/completion/arson.fish -t arson/
 tar -cjf arson-${Arson_Version}.tar.bz2 arson/
 
 

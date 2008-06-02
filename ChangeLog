@@ -1,3 +1,22 @@
+arson v0.8.5 (1June2008)
+- PKGBUILD fixes. Oops.
+- Completion is now installed.
+- added a "beta mode" - just add "beta" anywhere in arson's parameter list,
+and ruby-prof will be activated. Requires ruby-prof (sudo gem install
+ruby-prof) to be installed.
+
+arson v0.8.4 (1June2008)
+- Added SpookyET's FISH arson completion script.
+- Will add SpookyET's Zsh arson completion whenever.
+- Fixed -f paramter, it now actually works!
+- Added Ferret searching. To use it: arson -S <keyword> <filter> where
+<filter> is a Ferret query (see:
+http://ferret.davebalmain.com/api/classes/Ferret/QueryParser.html)
+- Added alphabetical sorting to all commands.
+- Added a check for the only FileUtils#rm call in the script.
+- Still waiting on Aaron or Simo to push 1.5.2 with scj's patches - those will
+help in arson's speed immensely!
+
 arson v0.8.3 (30April2008)
 - Gah. I still didn't fix -U/--upgrade. Now it actually runs! [Thanks once
 more rson451]
