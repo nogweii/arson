@@ -53,14 +53,14 @@ def opt_parse(args)
 			puts colorful("Warning: Command #{$Options[:command].capitalize} already given, ignoring '-I'",:magenta) if $Options[:command]
 			$Options[:command] ||= :info
 		end
-		op.on("-U", "--Upgrade", "List of foreign packages which have an update available for them in AUR") do |u|
+		op.on("-U", "--Upgrade", "List of foreign packages which have an", "update available for them in AUR") do |u|
 			puts colorful("Warning: Command #{$Options[:command].capitalize} already given, ignoring '-U'",:magenta) if $Options[:command]
 			$Options[:command] ||= :upgrade
 		end
 
 		op.separator ""
 		op.separator "Download options"
-		op.on("--save-to [PATH]", "Directory for arson to download AUR packages [Default: #{colorful('Current directory',:magenta)}]") do |h|
+		op.on("--save-to [PATH]", "Directory for arson to download AUR", "packages [Default: #{colorful('Current directory',:magenta)}]") do |h|
 			h = (h[0...1] == "/" ? h : "#{Dir.pwd}/#{h}")
 			if File.exists? h
 				# JIC someone provides a link
@@ -70,7 +70,7 @@ def opt_parse(args)
 				exit 1
 			end
 		end
-		op.on("-k", "--keep", "Keep the .tar.gz after extracting it [Default: #{colorful('Delete',:magenta)}]") do |x|
+		op.on("-k", "--keep", "Keep the .tar.gz after extracting it ", "[Default: #{colorful('Delete',:magenta)}]") do |x|
 			$Options[:no_delete] = x
 		end
 		op.on("-f", "--force", "Force the extraction of the package") do |f|

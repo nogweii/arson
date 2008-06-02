@@ -4,6 +4,7 @@ arson v0.8.5 (1June2008)
 - added a "beta mode" - just add "beta" anywhere in arson's parameter list,
 and ruby-prof will be activated. Requires ruby-prof (sudo gem install
 ruby-prof) to be installed.
+- The help message is now no longer than 80 charachters wide!
 
 arson v0.8.4 (1June2008)
 - Added SpookyET's FISH arson completion script.
