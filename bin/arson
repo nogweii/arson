@@ -125,7 +125,7 @@ EOMHELP
 	unless $Options[:download_dir]
 		$Options[:download_dir] = Pathname.new(Dir.pwd).realpath
 	end
-	unless $Options[:filter] and ARGV.length > 1
+	if $Options[:filter] == nil and ARGV.length > 1
 		$Options[:filter] = ARGV[ARGV.length-1]
 		ARGV.pop # Remove the last parameter (filter)
 	end
