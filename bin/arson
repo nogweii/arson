@@ -326,13 +326,13 @@ def pacman_check_aur_updates
 	end
 
 	for repo in $Options[:foreign]
+		puts "Searching #{repo} for updates in AUR..."
 		Dir["#{repo}/*"].each do |pkg|
 			desc = File.read("#{pkg}/desc")
 			cache = {:v => desc[/^%VERSION%\n(.*)/, 1], :n => desc[/^%NAME%\n(.*)/, 1]}
 			aur = json_open(Aur_Info % cache[:n])
 			if aur['type'] == 'error'
-				puts colorful("Error: #{aur['results']}",:red)
-				exit 1
+				next
 			end
 			found_toggle = true
 			instver = VersionNumber.new(cache[:v])
