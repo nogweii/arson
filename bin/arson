@@ -73,8 +73,20 @@ def opt_parse(args)
 		op.on("-k", "--keep", "Keep the .tar.gz after extracting it ", "[Default: #{colorful('Delete',:magenta)}]") do |x|
 			$Options[:no_delete] = x
 		end
-		op.on("-f", "--force", "Force the extraction of the package") do |f|
-			$Options[:force] = f
+		op.on("-f", "--force", "Force the extraction of the package") do |force|
+			$Options[:force] = force
+		end
+		op.on("--filter [FILTER]", "Set the filter used by Ferret to this.", "[Default: Last paramter]") do |filter|
+			$Options[:filter] = filter
+		end
+
+		op.separator ""
+		op.separator "Upgrade options"
+		op.on("--foreign [REPO]", "Set all packages within a repository as", "foreign, to be included in the", "upgrade search. This can be repeated", "multiple times. [Default: None]") do |repo|
+			unless File.exists? Pacman_Local_Sync % repo
+				puts colorful("Can not find repository #{repo}. Try running `pacman -Sy'?", :red)
+			end
+			$Options[:foreign] = ($Options[:foreigns]||[]) << (Pacman_Local_Sync % repo)
 		end
 
 		op.separator ""
@@ -98,6 +110,8 @@ def opt_parse(args)
 			puts <<EOMHELP
 To install all the dependencies (optional or not) of arson, run the following:
 	gem install facets json ferret
+
+Some of the advanced syntax in the filter used by Ferret contains spaces or other puncuation. If arson isn't working as expected, try quoting it ("filter" vs filter) and if it still doesn't work, then alert me.
 EOMHELP
 			exit 0
 		end
@@ -110,6 +124,10 @@ EOMHELP
 	end
 	unless $Options[:download_dir]
 		$Options[:download_dir] = Pathname.new(Dir.pwd).realpath
+	end
+	unless $Options[:filter] and ARGV.length > 1
+		$Options[:filter] = ARGV[ARGV.length-1]
+		ARGV.pop # Remove the last parameter (filter)
 	end
 end
 #pp options
@@ -294,6 +312,8 @@ end
 def pacman_check_aur_updates
 	puts "Checking if any foreign packages have updates available in AUR" if $Options[:verbose]
 	found_toggle = false
+	
+	
 	`pacman -Qm`.each_line do |line|
 		name, version = line.chomp.split
 		aur = json_open(Aur_Info % name)['results']
@@ -304,6 +324,23 @@ def pacman_check_aur_updates
 			puts "#{colorful(name,:bold)} has an update available: #{colorful(version,:red)} -> #{colorful(aur['Version'],:green)}" if aurver > instver
 		end
 	end
+
+	for repo in $Options[:foreign]
+		Dir["#{repo}/*"].each do |pkg|
+			desc = File.read("#{pkg}/desc")
+			cache = {:v => desc[/^%VERSION%\n(.*)/, 1], :n => desc[/^%NAME%\n(.*)/, 1]}
+			aur = json_open(Aur_Info % cache[:n])
+			if aur['type'] == 'error'
+				puts colorful("Error: #{aur['results']}",:red)
+				exit 1
+			end
+			found_toggle = true
+			instver = VersionNumber.new(cache[:v])
+			aurver = VersionNumber.new(aur['Version'])
+			puts "#{colorful(name,:bold)} has an update available: #{colorful(version,:red)} -> #{colorful(aur['Version'],:green)}" if aurver > instver
+
+		end
+	end if $Options[:foreign]
 	unless found_toggle
 		puts "All foreign packages are up to date."
 	end

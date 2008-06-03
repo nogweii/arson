@@ -1,3 +1,6 @@
+arson v0.8.6 (3June2008)
+- Added --filter/--foreign options.
+
 arson v0.8.5 (1June2008)
 - PKGBUILD fixes. Oops.
 - Completion is now installed.
