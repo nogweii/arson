@@ -1,5 +1,12 @@
-arson v0.8.6 (3June2008)
+arson v0.8.6 (6July2008)
 - Added --filter/--foreign options.
+- Fixed download: If the package doesn't exist the first time, attempt to 
+use the pattern: /packages/<pkg>/<pkg>.tar.gz
+- Fixed download: If there are multiple results for a given term, only say
+"Not found" if none of the results match the package name.
+- Finshed development of arson until AUR JSON is updated (patches are in
+testing) unless another bug is found. I still need to create a web site for
+arson...
 
 arson v0.8.5 (1June2008)
 - PKGBUILD fixes. Oops.

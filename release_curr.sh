@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/zsh
 
 # Using the files currently in the directory, this script tars up all the files into 2: arson-<version>.tar.bz2 and arson.tar.gz. arson-<version> has the core distribution while arson.tar.gz is a file ready to upload to AUR.
 

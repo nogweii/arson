@@ -191,6 +191,7 @@ def aur_search(keyword, filter=nil)
 end
 def aur_download(packages)
 	puts "Downloading package#{packages.length > 1 ? 's' : ''} #{packages.join(', ')} to #{colorful($Options[:download_dir],:bold,:magenta)}"
+	no_pkg = true
 	packages.each do |pkg|
 	list = aur_list(pkg)
 	list.each do |names|
@@ -202,6 +203,7 @@ def aur_download(packages)
 			pp info if $Options[:verbose]
 FileUtils.chdir($Options[:download_dir]) do |dir|
 		begin
+			no_pkg = false
 			if in_pacman_sync? pkg, "community"
 				puts "Found package #{colorful(pkg,:bold)} in the community repo. Executing pacman..."
 				exec "sudo pacman -S #{pkg}"
@@ -216,8 +218,27 @@ FileUtils.chdir($Options[:download_dir]) do |dir|
 				end
 			end
 		rescue OpenURI::HTTPError => e
-			puts colorful("Error downloading #{pkg}: #{e.message}",:red)
-			exit 1
+			if e.message.include? "404"
+				begin
+					no_pkg = false
+					puts "404 Error when downloading #{pkg}, attempting to use the pattern to download" if $Options[:verbose]
+					open("#{Aur_Domain}/packages/#{pkg}/#{pkg}.tar.gz") do |tar|
+					# Write the stream to a file, b is JIC
+						File.open("#{dir}/#{pkg}.tar.gz", "wb") do |file|
+							puts colorful("Downloading #{pkg}",:blue) if $Options[:verbose]
+							file.write(tar.read)
+						end
+					end
+				rescue OpenURI::HTTPError => e
+					puts colorful("Error downloading #{pkg}: #{e.message}",:red)
+					no_pkg = false # Eh, you never know...
+					exit 1
+				end
+			else
+				puts colorful("Error downloading #{pkg}: #{e.message}",:red)
+				no_pkg = false # Eh, you never know...
+				exit 1
+			end
 		end
 		puts colorful("Extracting #{pkg}.tar.gz",:blue) if $Options[:verbose]
 		# Extract the archive
@@ -239,12 +260,13 @@ FileUtils.chdir($Options[:download_dir]) do |dir|
 		end
 end
 
-		else
-			puts colorful("Error: No package named '#{pkg}' found",:red)
-			#exit 1
 		end
+		end
+	if no_pkg
+		puts colorful("Error: No package named '#{pkg}' found",:red)
+		exit 1
 	end
-	end
+	end # packages.each
 end
 def aur_list(name)
 	json = json_open(Aur_Search % CGI::escape(name))
