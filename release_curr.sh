@@ -6,7 +6,7 @@ if [ ! -d release ] ; then
 	mkdir release
 fi
 cd release
-Arson_Version=$(ruby -e"load './bin/arson'; puts ARSON_VERSION.join('.')")
+Arson_Version=$(ruby -e"load '../bin/arson'; puts ARSON_VERSION.join('.')")
 
 # Mkdir for core
 mkdir arson
