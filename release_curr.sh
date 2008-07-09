@@ -12,19 +12,22 @@ Arson_Version=$(ruby -e"load '../bin/arson'; puts ARSON_VERSION.join('.')")
 mkdir arson
 cp ../bin/arson ../ChangeLog ../contrib/completion/arson.fish -t arson/
 tar -cjf arson-${Arson_Version}.tar.bz2 arson/
-# Custom script wrapping around scp. For my (evaryont, Colin Shea) use only, 
-# really.
-if [ -e ~/bin/uproot ] ; then
+if [ -e ~/bin/uproot ] ; then # Custom upload which sends to my server
 	uproot arson-${Arson_Version}.tar.bz2 /pub/rambling/public/projects/
 fi
 
 # Mkdir for AUR dist
 mkdir aur/
-cp ../contrib/arch_aur/* -t aur/
+cp ../contrib/arch_aur/PKGBUILD ../contrib/arch_aur/arson.install -t aur/
 cd aur/
-cat PKGBUILD | sed "s/md5sums.*/$(makepkg -g 2>/dev/null)/" > PKGBUILD
+makepkg -g &>/dev/null 1>file
+cat file
+rm file
+echo "Using that string, please update the PKGBUILD, then press enter"
+read
+cp -f ../../contrib/arch_aur/PKGBUILD -t .
 makepkg --source
-mv arson-${Arson_Version}-1.src.tar.gz ../arson.tar.gz
+mv arson-*.src.tar.gz ../arson.tar.gz
 cd ..
 
 rm -r aur/ arson/

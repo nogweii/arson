@@ -24,7 +24,7 @@ end
       require lib
 end
 
-ARSON_VERSION = [0, 8, 6]
+ARSON_VERSION = [0, 8, 7]
 # Loui's AUR: "http://aur.louipc.yi.org/"
 # He has a bunch of fixes already, useful to test arson against any seriously new changes
 #Aur_Domain = "http://aur.louipc.yi.org/"
@@ -155,6 +155,7 @@ def aur_search(keyword, filter=nil)
 		info = json_open(Aur_Info % values[1])
 		unless info['type'] == 'error'
 			info = info['results']
+			next if in_pacman_sync?(info['Name'],"community")
 			index << info
 			#puts "Added #{values[0]} | #{info.class}"
 		else
@@ -163,8 +164,8 @@ def aur_search(keyword, filter=nil)
 	end
 	if filter
 		docs = []
-		index.search_each(filter) do |doc, score|
-			docs << index[doc]
+		index.search_each(filter) do |doci, score|
+			docs << index[doci]
 		end
 		puts "Found #{colorful(docs.length.to_s,:magenta)} results"
 		docs.each do |doc|
@@ -172,7 +173,7 @@ def aur_search(keyword, filter=nil)
 			version = colorful(doc[:Version],:bold,:red) if doc[:OutOfDate] == '1'
 			install_stat = pacman_cache_check(doc[:Name],doc[:Version])
 			repo = "aur"
-			next if in_pacman_sync?(doc[:Name],"community")
+			#next if in_pacman_sync?(doc[:Name],"community")
 			puts "[#{colorful(install_stat,:underline,:cyan)}] #{colorful("#{repo}/#{doc[:Name]}",:bold,:blue)} (#{version}): #{doc[:Description]}"
 		end
 	else
@@ -183,7 +184,7 @@ def aur_search(keyword, filter=nil)
 			version = colorful(doc[:Version],:bold,:red) if doc[:OutOfDate] == '1'
 			install_stat = pacman_cache_check(doc[:Name],doc[:Version])
 			repo = "aur"
-			next if in_pacman_sync?(doc[:Name],"community")
+			#next if in_pacman_sync?(doc[:Name],"community")
 			puts "[#{colorful(install_stat,:underline,:cyan)}] #{colorful("#{repo}/#{doc[:Name]}",:bold,:blue)} (#{version}): #{doc[:Description]}"
 		end
 	end

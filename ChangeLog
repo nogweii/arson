@@ -1,3 +1,9 @@
+arson v0.8.7 (6July2008)
+- I got the development bug, sigh... :)
+- Fixed Search: Arson incorrectly displayed the total search result count.
+Before, it included results from community (which is still in AUR DB...) and
+now it doesn't! This also happens to increase search speed (marginally...)
+
 arson v0.8.6 (6July2008)
 - Added --filter/--foreign options.
 - Fixed download: If the package doesn't exist the first time, attempt to 
