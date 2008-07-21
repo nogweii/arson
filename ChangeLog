@@ -13,6 +13,10 @@ if a package exists THEN checking if we already downloaded it!
 - Added a catch for ambiguous options. Primary example: -s vs -S, they are
 mostly different, but OptionParser gets confused when I haven't actually
 specified the differenced them. Baby.
+- Switched search to a progressive search. It was relatively easy. Silly me.
+- Count is now at the end of the results.
+- Rewrite of search. MUCH faster now, would be even faster with the AUR
+patches.
 
 arson v0.8.6 (6July2008)
 - Added --filter/--foreign options.
