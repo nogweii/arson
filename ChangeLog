@@ -23,6 +23,11 @@ the pacman cache and checks AUR. It's silent if it can't find it in AUR as
 well. If it's in AUR, arson downloads it.
 - Generates a list of repositories from /etc/pacman.conf (== Pacman_Conf).
 Used with the recursive downloads, soon to be more.
+- Removed --filter, now it completeley follows AUR's search engine. If a
+keyword pair doesn't work as expected, test in AUR itself before complaining
+to me!
+- Added long output to Info!
+- Misc changes
 
 arson v0.8.6 (6July2008)
 - Added --filter/--foreign options.

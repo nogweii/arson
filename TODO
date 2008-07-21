@@ -1,10 +1,10 @@
 Add a -a/--abs option to download a pacman package from ABS (if it exists)
 	- This probably would require a call to rsync directly. Yay?
-	- Try to make this optional?
+	- `rsync -mrt --no-motd --delete-after --delete-excluded rsync.archlinux.org::abs/i686/<repo>/<pkg> <$Options[:download_dir]>`
 
 - Setup incremental searching (or whateverever it truly is) instead of the current get-all-and-use-ferret (Reduces deps!) *DONE*
 
-Add a -l/--long option to show results for anything (searching, information, etc) in a more tabular method
+- Add a -l/--long option to show results for anything (searching, information, etc) in a more tabular method *DONE*
 
  - Add a catch for ambiguous option *DONE*
  -	> /usr/lib/ruby/1.8/optparse.rb:1443:in 'complete': ambiguous option: -s (OptionParser::AmbiguousOption)
