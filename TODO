@@ -15,7 +15,7 @@ Add searching pacman cache for more results. Include repo.
 
  - Fix error: "Error: tint already exists. Pass -f...", change 'tint' to '/full/path/to/tint' and add something about overwriting the directory? *DONE*
 
-Add searching the pacman cache for AUR depenedencies (provide option to disable)
-	- Would have to add a default check to set it to true unless otherwise set (if == nil?)
-	- Example test case (for sure):
-		- gtim => config
+- Add searching the pacman cache for AUR depenedencies (provide option to disable) *DONE*
+-	- Would have to add a default check to set it to true unless otherwise set (if == nil?)
+-	- Example test case (for sure):
+-		- gtim => config

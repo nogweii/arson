@@ -17,6 +17,12 @@ specified the differenced them. Baby.
 - Count is now at the end of the results.
 - Rewrite of search. MUCH faster now, would be even faster with the AUR
 patches.
+- Color changes for search result notifiers.
+- Recursive downloads! Arson checks for dependencies that don't exist within
+the pacman cache and checks AUR. It's silent if it can't find it in AUR as
+well. If it's in AUR, arson downloads it.
+- Generates a list of repositories from /etc/pacman.conf (== Pacman_Conf).
+Used with the recursive downloads, soon to be more.
 
 arson v0.8.6 (6July2008)
 - Added --filter/--foreign options.
