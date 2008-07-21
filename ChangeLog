@@ -3,6 +3,13 @@ arson v0.8.7 (6July2008)
 - Fixed Search: Arson incorrectly displayed the total search result count.
 Before, it included results from community (which is still in AUR DB...) and
 now it doesn't! This also happens to increase search speed (marginally...)
+- Updated error message for 'existing dir' to actually mean something more
+instead of being so idioticly general. /me hates himself for stupid error
+message
+- Return of TODO list! I'm just not using RTM...wow I hate the fact that it
+doesn't have nestable todos!
+- Shifted the existence check to be the first. No more querying AUR to check
+if a package exists THEN checking if we already downloaded it!
 
 arson v0.8.6 (6July2008)
 - Added --filter/--foreign options.

@@ -191,9 +191,10 @@ def aur_search(keyword, filter=nil)
 
 end
 def aur_download(packages)
-	puts "Downloading package#{packages.length > 1 ? 's' : ''} #{packages.join(', ')} to #{colorful($Options[:download_dir],:bold,:magenta)}"
+	puts "Downloading package#{packages.length > 1 ? 's' : ''} to #{colorful($Options[:download_dir],:bold,:magenta)}"
 	no_pkg = true
 	packages.each do |pkg|
+	if check_existence(pkg)
 	list = aur_list(pkg)
 	list.each do |names|
 		if names[0] == pkg
@@ -243,7 +244,6 @@ FileUtils.chdir($Options[:download_dir]) do |dir|
 		end
 		puts colorful("Extracting #{pkg}.tar.gz",:blue) if $Options[:verbose]
 		# Extract the archive
-		if check_existence(pkg)
 			tgz = Zlib::GzipReader.new(File.open("#{pkg}.tar.gz", 'rb'))
 			# Extract pkg.tar.gz to `pwd`, instead of `pwd`/pkg
 			Archive::Tar::Minitar.unpack(tgz, Dir.pwd)
@@ -255,10 +255,6 @@ FileUtils.chdir($Options[:download_dir]) do |dir|
 				FileUtils.rm "#{pkg}.tar.gz" if File.exists? "#{pkg}.tar.gz"
 			end
 
-		else
-			puts colorful("Error: #{pkg} already exists. Pass -f to skip this check", :red)
-			exit 1
-		end
 end
 
 		end
@@ -267,7 +263,11 @@ end
 		puts colorful("Error: No package named '#{pkg}' found",:red)
 		exit 1
 	end
-	end # packages.each
+	else
+		puts colorful("Error: #{$Options[:download_dir]}/#{pkg} already exists. Pass -f to overwrite it.", :red)
+		exit 1
+	end # if check_existence(pkg)
+	end # packages.each do |pkg|
 end
 def aur_list(name)
 	json = json_open(Aur_Search % CGI::escape(name))
