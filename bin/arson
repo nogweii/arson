@@ -19,8 +19,7 @@ end
 
 # {{{ Require statements
 %w{optparse pp cgi open-uri pathname ftools zlib rubygems json/add/core 
-   facets facets/version facets/minitar facets/ansicode ferret
-   }.each do |lib|
+   facets facets/version facets/minitar facets/ansicode}.each do |lib|
       require lib
 end
 
@@ -387,6 +386,9 @@ if $0 == __FILE__
 	rescue OptionParser::InvalidOption => e
 		puts colorful("#{e.to_s.capitalize}. Please use only the following:",:red)
 		opt_parse(["-h"])
+	rescue OptionParser::AmbiguousOption => e
+		puts colorful("#{e.to_s.capitalize}. Please make sure that you have only one short argument, regardless of case.", :red)
+		opt_parse(['-h'])
 	end
 
 	if ARGV.size < 1 and $Options[:command] != :upgrade

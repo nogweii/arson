@@ -2,18 +2,18 @@ Add a -a/--abs option to download a pacman package from ABS (if it exists)
 	- This probably would require a call to rsync directly. Yay?
 	- Try to make this optional?
 
-Setup incremental searching (or however it truly is) instead of the current get-all-and-use-ferret (Reduces deps!)
+Setup incremental searching (or whateverever it truly is) instead of the current get-all-and-use-ferret (Reduces deps!)
 
 Add a -l/--long option to show results for anything (searching, information, etc) in a more tabular method
 
-Add a catch for ambiguous option
-	> /usr/lib/ruby/1.8/optparse.rb:1443:in 'complete': ambiguous option: -s (OptionParser::AmbiguousOption)
+ - Add a catch for ambiguous option *DONE*
+ -	> /usr/lib/ruby/1.8/optparse.rb:1443:in 'complete': ambiguous option: -s (OptionParser::AmbiguousOption)
 
 Add searching pacman cache for more results. Include repo.
 	 - PacNet category searching?
 	  \- Wait for another AUR helper to develop an interface 'properly' and rip it, improving/integrating?
 
-Fix error: "Error: tint already exists. Pass -f...", change 'tint' to '/full/path/to/tint' and add something about overwriting the directory?
+ - Fix error: "Error: tint already exists. Pass -f...", change 'tint' to '/full/path/to/tint' and add something about overwriting the directory? *DONE*
 
 Add searching the pacman cache for AUR depenedencies (provide option to disable)
 	- Would have to add a default check to set it to true unless otherwise set (if == nil?)
