@@ -1,4 +1,4 @@
-arson v0.8.7 (DEVELOPMENT - UNRELEASED)
+arson v0.8.7 (21July2008)
 - I got the development bug, sigh... :)
 - Fixed Search: Arson incorrectly displayed the total search result count.
 Before, it included results from community (which is still in AUR DB...) and

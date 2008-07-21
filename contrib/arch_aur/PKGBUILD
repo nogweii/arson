@@ -7,7 +7,7 @@ arch=(i686 x86_64)
 url="http://bbs.archlinux.org/viewtopic.php?pid=348138"
 license=('GPL')
 source=("http://evaryont.ath.cx/projects/${pkgname}-${pkgver}.tar.bz2")
-md5sums=('2663906fc99c9480a211e7e985254250')
+md5sums=('5af6a45c9d40a503f13547b0713cd86d')
 depends=('ruby' 'rubygems')
 install='arson.install'
 
