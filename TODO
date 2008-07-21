@@ -2,7 +2,7 @@ Add a -a/--abs option to download a pacman package from ABS (if it exists)
 	- This probably would require a call to rsync directly. Yay?
 	- Try to make this optional?
 
-Setup incremental searching (or whateverever it truly is) instead of the current get-all-and-use-ferret (Reduces deps!)
+- Setup incremental searching (or whateverever it truly is) instead of the current get-all-and-use-ferret (Reduces deps!) *DONE*
 
 Add a -l/--long option to show results for anything (searching, information, etc) in a more tabular method
 
