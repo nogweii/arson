@@ -1,16 +1,16 @@
 ## arg 1:  the new package version
 post_install() {
-  echo ">> Installing JSON, Facets, Ferret ruby gems, this could take a while..."
+  echo ">> Installing JSON and Facets ruby gems, this could take a while..."
   gem install --remote json facets ferret
 }
 
 post_upgrade() {
-  echo ">> Make sure the JSON, Facets, and Ferret ruby gems are up to date"
+  echo ">> Make sure the JSON and Facets ruby gems are up to date"
   echo ">> See arson --more-help for help"
 }
 
 post_remove() {
-  echo ">> The JSON, Facets, Ferret ruby gems are still installed on your system, if you want to remove them, run 'gem uninstall json facets ferret'"
+  echo ">> The JSON and Facets ruby gems are still installed on your system, if you want to remove them, run 'gem uninstall json facets ferret'"
 }
 
 # vim:set ts=2 sw=2 et:

@@ -105,7 +105,7 @@ end
 		op.on_tail("--more-help", "Display even more help") do |mh|
 			puts <<EOMHELP
 To install all the dependencies (optional or not) of arson, run the following:
-	gem install facets json ferret
+	gem install facets json
 EOMHELP
 			exit 0
 		end
