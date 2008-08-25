@@ -131,7 +131,7 @@ EOMHELP
 end
 # Add ASCII colors to string, using Facet's ANSICode class. effects is a array of symbols that are valid class methods
 def colorful(string, *effects)
-	unless $Options[:no_color] or ARGV.include? "-c" or ARGV.include "--no-color"
+	unless $Options[:no_color] or ARGV.include? "-c" or ARGV.include? "--no-color"
 		colored = " "
 		effects.each do |ef|
 			colored << "#{ANSICode.send(ef)}"
