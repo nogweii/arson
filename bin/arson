@@ -402,7 +402,13 @@ def check_existence(pkg)
 		return true
 	end
 end
-
+# Pulls a package from ABS
+def abs_pull(repo, pkg)
+	if File.exists? "/usr/bin/rsync"
+		Dir.chdir($Options[:download_dir])
+		`/usr/bin/rsync -mrt --no-motd --delete-after rsync.archlinux.org::abs/i686/#{repo}/#{pkg} .`
+	end
+end
 
 if $0 == __FILE__
 	trap(:INT) { exit 0 } # Exit gracefully
@@ -441,3 +447,4 @@ if $0 == __FILE__
 		pacman_check_aur_updates
 	end
 end
+

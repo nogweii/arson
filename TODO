@@ -19,3 +19,12 @@ Add searching pacman cache for more results. Include repo.
 -	- Would have to add a default check to set it to true unless otherwise set (if == nil?)
 -	- Example test case (for sure):
 -		- gtim => config
+
+Fix -git issue:
+(from rson451's comp)
+[randy@voodoo arson]$ arson -S arson
+[I] aur/arson (0.8.7-1): The HOT AUR search helper!
+Found 1 results
+[randy@voodoo arson]$ pacman -Qs arson
+local/arson-git 20080825-1 The HOT AUR search helper (git)
+[randy@voodoo arson]$
