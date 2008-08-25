@@ -43,13 +43,18 @@ def opt_parse(args)
 		puts colorful("Warning: Command #{$Options[:command].capitalize} already given, ignoring '-U'",:magenta) if $Options[:command]
 		$Options[:command] ||= :upgrade
 end
-op.separator "\n"
+	op.on("-C", "--Category", "Find a package based on what category it", "is in") do |c|
+		puts colorful("Warning: Command #{$Options[:command].capitalize} already given, ignoring '-C'",:magenta) if $Options[:command]
+		$Options[:command] ||= :category
+end
+
+#op.separator "\n"
 op.separator "Search options"
 op.on("--filter [KEYWORD]", "Filter search results by this word.", "It is not included in the original AUR", "search. [Default: Show all results]") do |filter|
 	$Options[:filter] = filter
 end
 
-op.separator "\n"
+#op.separator "\n"
 op.separator "Download options"
 op.on("--save-to [PATH]", "Directory for arson to download AUR", "packages [Default: #{colorful('Current directory',:magenta)}]") do |h|
 	h = (h[0...1] == "/" ? h : "#{Dir.pwd}/#{h}")
@@ -74,7 +79,7 @@ op.on("--save-to [PATH]", "Directory for arson to download AUR", "packages [Defa
 	  $Options[:makepkg] = makepkg
   end
 
-  op.separator "\n"
+#  op.separator "\n"
   op.separator "Upgrade options"
   op.on("--foreign [REPO]", "Set all packages within a repository as", "foreign, to be included in the", "upgrade search. This can be repeated", "multiple times. [Default: None]") do |repo|
 	  unless File.exists? Pacman_Local_Sync % repo
@@ -84,19 +89,18 @@ op.on("--save-to [PATH]", "Directory for arson to download AUR", "packages [Defa
   end
 
 
-  op.separator "\n"
+#  op.separator "\n"
   op.separator "Info options"
   op.on("-l", "--[no-]long", "Use a more tabular display for output") do |long|
 	  $Options[:long] = long
 		end
 
-		op.separator "\n"
+#		op.separator "\n"
 		op.separator "Generic options"
-		# Color options -x --[no-]color
 		op.on("-v", "--[no-]verbose", "Run verbosely") do |v|
 			$Options[:verbose] = v
 		end
-		op.on("-c", "--no-color", "Supress color output [Default: #{colorful('No',:magenta)}]") do |c|
+		op.on("-x", "--no-color", "Supress color output [Default: #{colorful('No',:magenta)}]") do |c|
 			$Options[:no_color] = !c
 		end
 		op.on_tail("-V", "--version", "Display the version number") do |v|
@@ -445,6 +449,8 @@ if $0 == __FILE__
 		aur_info(ARGV)
 	elsif $Options[:command] == :upgrade
 		pacman_check_aur_updates
+	elsif $Options[:command] == :upgrade
+		pacnet_cats(ARGV.empty? ? nil : ARGV)
 	end
 end
 
