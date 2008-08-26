@@ -413,6 +413,32 @@ def abs_pull(repo, pkg)
 		`/usr/bin/rsync -mrt --no-motd --delete-after rsync.archlinux.org::abs/i686/#{repo}/#{pkg} .`
 	end
 end
+# Gets the categories or packages underneath a category
+def pacnet_cats(category)
+	if category
+		pkgs = json_open("http://pacnet.karbownicki.com/api/json/category/#{category}")
+		pkgs.each do |pkg|
+			puts search_style(pkg['name'], pkg['version'], pkg['description'])
+		end
+	else
+		puts open("http://pacnet.karbownicki.com/api/text/categories").read
+	end
+end
+# Does the styling of a package (whether AUR or Pacman), ready for output in the search results
+def search_style(name, version, description, ood=false)
+	version = colorful(version,:bold)
+	version = colorful(version,:bold,:red) if ood
+	install_char = pacman_cache_check(name, version)
+	install_stat = colorful(install_char, :underline, :blue)
+	install_stat = colorful(install_char, :cyan) if install_char == 'I'
+	install_stat = colorful(install_char, :underline, :red) if install_char == 'U'
+
+	# TODO: repo detection code hasn't be written yet, add a repo status
+	# to the results once it's done
+#	repo = "aur"
+#	puts "[#{install_stat}] #{colorful("#{repo}/#{info['Name']}",:bold,:blue)} (#{version}): #{info['Description']}"
+	"[#{install_stat}] #{colorful("#{name}",:bold,:blue)} (#{version}): #{description}"
+end
 
 if $0 == __FILE__
 	trap(:INT) { exit 0 } # Exit gracefully
@@ -427,7 +453,7 @@ if $0 == __FILE__
 		opt_parse(['-h'])
 	end
 
-	if ARGV.size < 1 and $Options[:command] != :upgrade
+	if ARGV.size < 1 and ![:upgrade, :category].include? $Options[:command]
 		puts "#{colorful('No keywords found!',:red)} Try using only alphanumeric characters for your keywords."
 		opt_parse(["-h"]) # Force the help message to be displayed
 	end
@@ -449,8 +475,8 @@ if $0 == __FILE__
 		aur_info(ARGV)
 	elsif $Options[:command] == :upgrade
 		pacman_check_aur_updates
-	elsif $Options[:command] == :upgrade
-		pacnet_cats(ARGV.empty? ? nil : ARGV)
+	elsif $Options[:command] == :category
+		pacnet_cats(ARGV[0])
 	end
 end
 
