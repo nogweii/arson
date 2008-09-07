@@ -6,16 +6,17 @@ pkgdesc="The HOT AUR search helper!"
 arch=(i686 x86_64)
 url="http://bbs.archlinux.org/viewtopic.php?pid=348138"
 license=('GPL')
-source=("http://evaryont.ath.cx/projects/${pkgname}-${pkgver}.tar.bz2")
-md5sums=('5af6a45c9d40a503f13547b0713cd86d')
+source=("http://github.com/evaryont/$pkgname/tarball/v$pkgver")
+md5sums=('2620667aa20a1ee043f6fa42677c94c7')
 depends=('ruby' 'rubygems')
 install='arson.install'
 
 build() {
-  install -d $startdir/pkg/usr/share/doc/$pkgname $startdir/pkg/usr/bin $startdir/pkg/usr/share/fish/completion/
-  install -t $startdir/pkg/usr/share/doc/$pkgname $srcdir/arson/ChangeLog -m 644
-  install -t $startdir/pkg/usr/bin $srcdir/arson/arson -m 755
-  install -t $startdir/pkg/usr/share/fish/completion $srcdir/arson/arson.fish -m 755
+  cd $srcdir/evaryont-arson-*
+  install -d $pkgdir/usr/share/doc/$pkgname $pkgdir/usr/bin $pkgdir/usr/share/fish/completion/
+  install -t $pkgdir/usr/share/doc/$pkgname ChangeLog -m 644
+  install -t $pkgdir/usr/bin bin/arson -m 755
+  install -t $pkgdir/usr/share/fish/completion contrib/completion/arson.fish -m 755
 }
 
 # vim:set ts=2 sw=2 et:
