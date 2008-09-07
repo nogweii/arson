@@ -6,6 +6,8 @@ actually worked. Otherwise I've done nothing with it.
 - Commented the methods a whole bunch.
 - Colors are disabled in the help message as well (which is before
 $Options[:no_color] is set)
+- Added -C command: Searching pacnet, for quickly finding pacman packages (but
+not installing them, that's a separate call to pacman)
 
 arson v0.8.7 (21July2008)
 - I got the development bug, sigh... :)
