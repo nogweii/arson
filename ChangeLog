@@ -1,13 +1,11 @@
 arson v0.8.8 (UNRELEASED)
 - Fixed source tabbing (Better for me, the dev)
 - Fixed existence checking
-- Added "Beta Mode" seeing as I only used it twice, when I checked that it
+- Removed "Beta Mode" seeing as I only used it twice, when I checked that it
 actually worked. Otherwise I've done nothing with it.
 - Commented the methods a whole bunch.
 - Colors are disabled in the help message as well (which is before
 $Options[:no_color] is set)
-- When passed the --makepkg option, arson will call makepkg to build the
-function, and will pass --nocolor to makepkg is -c/--no-color is set.
 
 arson v0.8.7 (21July2008)
 - I got the development bug, sigh... :)

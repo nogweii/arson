@@ -75,9 +75,10 @@ op.on("--save-to [PATH]", "Directory for arson to download AUR", "packages [Defa
   op.on("-r", "--[no-]recursive", "Check the dependency list for other AUR", "packages. [Default: Yes]") do |recur|
 	  $Options[:recursive] = recur
   end
-  op.on("--makepkg", "Call makepkg to build a package") do |makepkg|
-	  $Options[:makepkg] = makepkg
-  end
+  # Maybe - not sure.
+#  op.on("--makepkg", "Call makepkg to build a package") do |makepkg|
+#	  $Options[:makepkg] = makepkg
+#  end
 
 #  op.separator "\n"
   op.separator "Upgrade options"
