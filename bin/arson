@@ -425,19 +425,21 @@ def pacnet_cats(category)
 	end
 end
 # Does the styling of a package (whether AUR or Pacman), ready for output in the search results
-def search_style(name, version, description, ood=false)
+# Highlights the package name in the given color (last parameter)
+def search_style(name, version, description, highlight=nil)
 	version = colorful(version,:bold)
 	version = colorful(version,:bold,:red) if ood
 	install_char = pacman_cache_check(name, version)
 	install_stat = colorful(install_char, :underline, :blue)
 	install_stat = colorful(install_char, :cyan) if install_char == 'I'
 	install_stat = colorful(install_char, :underline, :red) if install_char == 'U'
+	name = (highlight ? colorful(name,:bold,highlight) : colorful(name,:bold,:blue))
 
 	# TODO: repo detection code hasn't be written yet, add a repo status
 	# to the results once it's done
 #	repo = "aur"
 #	puts "[#{install_stat}] #{colorful("#{repo}/#{info['Name']}",:bold,:blue)} (#{version}): #{info['Description']}"
-	"[#{install_stat}] #{colorful("#{name}",:bold,:blue)} (#{version}): #{description}"
+	"[#{install_stat}] #{name} (#{version}): #{description}"
 end
 
 if $0 == __FILE__
