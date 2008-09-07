@@ -170,15 +170,17 @@ def aur_search(keywords)
 			end
 			puts " It's a successful match" if $Options[:verbose]
 			count += 1
-			version = colorful(info['Version'],:bold)
-			version = colorful(info['Version'],:bold,:red) if info['OutOfDate'] == '1'
-			install_char = pacman_cache_check(info['Name'],info['Version'])
-			install_stat = colorful(install_char, :underline, :blue)
-			install_stat = colorful(install_char, :cyan) if install_char == 'I'
-			install_stat = colorful(install_char, :underline, :red) if install_char == 'U'
+			# name, version, description, [highlight]
+#			version = colorful(info['Version'],:bold)
+#			version = colorful(info['Version'],:bold,:red) if info['OutOfDate'] == '1'
+#			install_char = pacman_cache_check(info['Name'],info['Version'])
+#			install_stat = colorful(install_char, :underline, :blue)
+#			install_stat = colorful(install_char, :cyan) if install_char == 'I'
+#			install_stat = colorful(install_char, :underline, :red) if install_char == 'U'
 
-			repo = "aur"
-			puts "[#{install_stat}] #{colorful("#{repo}/#{info['Name']}",:bold,:blue)} (#{version}): #{info['Description']}"
+#			repo = "aur"
+#			puts "[#{install_stat}] #{colorful("#{repo}/#{info['Name']}",:bold,:blue)} (#{version}): #{info['Description']}"
+			puts search_style(info['Name'], info['Version'], info['Description'], (info['OutOfDate'] == '1' ? :red : nil))
 
 			end
 		else
