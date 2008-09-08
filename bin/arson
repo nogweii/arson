@@ -431,7 +431,7 @@ end
 # Highlights the package name in the given color (last parameter)
 def search_style(name, version, description, highlight=nil)
 	version = colorful(version,:bold)
-	version = colorful(version,:bold,:red) if ood
+	version = colorful(version,:bold,highlight) if highlight
 	install_char = pacman_cache_check(name, version)
 	install_stat = colorful(install_char, :underline, :blue)
 	install_stat = colorful(install_char, :cyan) if install_char == 'I'
