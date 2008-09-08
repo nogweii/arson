@@ -1,4 +1,8 @@
-arson v0.8.8 (UNRELEASED)
+arson v0.8.9 (07Sept2008)
+- arson still reports as 0.8.8, oh well
+- BUG: search_style() still used ood instead of highlight. Fixed.
+
+arson v0.8.8 (06Sept2008)
 - Fixed source tabbing (Better for me, the dev)
 - Fixed existence checking
 - Removed "Beta Mode" seeing as I only used it twice, when I checked that it
