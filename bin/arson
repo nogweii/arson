@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/bin/ruby -wW2
 
 # AUR search program. Uses the RPC/JSON interface to query the db. Requires
 # rubygems and the JSON gem. And a whole lot more now!
@@ -8,7 +8,7 @@
 	require lib
 end
 
-ARSON_VERSION = [0, 8, 9]
+ARSON_VERSION = [0, 8, 11]
 # Loui's AUR: "http://aur.louipc.yi.org/"
 # He has a bunch of fixes already, useful to test arson against any seriously new changes
 #Aur_Domain = "http://aur.louipc.yi.org/"
@@ -43,14 +43,14 @@ def opt_parse(args)
 		puts colorful("Warning: Command #{$Options[:command].capitalize} already given, ignoring '-U'",:magenta) if $Options[:command]
 		$Options[:command] ||= :upgrade
 end
-	op.on("-C", "--Category", "Find a package based on what category it", "is in") do |c|
-		puts colorful("Warning: Command #{$Options[:command].capitalize} already given, ignoring '-C'",:magenta) if $Options[:command]
-		$Options[:command] ||= :category
+op.on("-C", "--Category", "Find a package based on what category it", "is in") do |c|
+	puts colorful("Warning: Command #{$Options[:command].capitalize} already given, ignoring '-C'",:magenta) if $Options[:command]
+	$Options[:command] ||= :category
 end
 
 #op.separator "\n"
 op.separator "Search options"
-op.on("--filter [KEYWORD]", "Filter search results by this word.", "It is not included in the original AUR", "search. [Default: Show all results]") do |filter|
+op.on("--filter [KEYWORD]", "Filter search results by this word.", "It is not included in the original AUR", "search. [Default: #{colorful('Show all results',:magenta)}]") do |filter|
 	$Options[:filter] = filter
 end
 
@@ -69,20 +69,20 @@ op.on("--save-to [PATH]", "Directory for arson to download AUR", "packages [Defa
   op.on("-k", "--keep", "Keep the .tar.gz after extracting it ", "[Default: #{colorful('Delete',:magenta)}]") do |x|
 	  $Options[:no_delete] = x
   end
-  op.on("-f", "--force", "Overwrite the package's extraction target", "if it exists. [Default: Don't]") do |force|
+  op.on("-f", "--force", "Overwrite the package's extraction target", "if it exists. [Default: #{colorful('Don\'t', :magenta)}]") do |force|
 	  $Options[:force] = force
   end
-  op.on("-r", "--[no-]recursive", "Check the dependency list for other AUR", "packages. [Default: Yes]") do |recur|
+  op.on("-r", "--[no-]recursive", "Check the dependency list for other AUR", "packages. [Default: #{colorful('Yes', :magenta)}]") do |recur|
 	  $Options[:recursive] = recur
   end
   # Maybe - not sure.
-#  op.on("--makepkg", "Call makepkg to build a package") do |makepkg|
-#	  $Options[:makepkg] = makepkg
-#  end
+  #  op.on("--makepkg", "Call makepkg to build a package") do |makepkg|
+  #	  $Options[:makepkg] = makepkg
+  #  end
 
-#  op.separator "\n"
+  #  op.separator "\n"
   op.separator "Upgrade options"
-  op.on("--foreign [REPO]", "Set all packages within a repository as", "foreign, to be included in the", "upgrade search. This can be repeated", "multiple times. [Default: None]") do |repo|
+  op.on("--foreign [REPO]", "Set all packages within a repository as", "foreign, to be included in the", "upgrade search. This can be repeated", "multiple times. [Default: #{colorful('None', :magenta)}]") do |repo|
 	  unless File.exists? Pacman_Local_Sync % repo
 		  puts colorful("Can not find repository #{repo}. Try running `pacman -Sy'?", :red)
 	  end
@@ -90,13 +90,13 @@ op.on("--save-to [PATH]", "Directory for arson to download AUR", "packages [Defa
   end
 
 
-#  op.separator "\n"
+  #  op.separator "\n"
   op.separator "Info options"
   op.on("-l", "--[no-]long", "Use a more tabular display for output") do |long|
 	  $Options[:long] = long
 		end
 
-#		op.separator "\n"
+		#		op.separator "\n"
 		op.separator "Generic options"
 		op.on("-v", "--[no-]verbose", "Run verbosely") do |v|
 			$Options[:verbose] = v
@@ -141,14 +141,15 @@ def colorful(string, *effects)
 		effects.each do |ef|
 			colored << "#{ANSICode.send(ef)}"
 		end
-		colored << string << "#{ANSICode.clear}"
-		colored[1..-1]
+	colored << string << "#{ANSICode.clear}"
+	colored[1..-1]
 	else
 		string
 	end
 end
 # Opens a given URL and tries parsing the contents as JSON. Returns the resulting hash, no error trapping provided
 def json_open(url)
+	puts "json_open(#{url})" if $Options[:verbose]
 	JSON.parse(open(url).read)
 end
 # Search the AUR for the array of keywords
@@ -172,15 +173,15 @@ def aur_search(keywords)
 			puts " It's a successful match" if $Options[:verbose]
 			count += 1
 			# name, version, description, [highlight]
-#			version = colorful(info['Version'],:bold)
-#			version = colorful(info['Version'],:bold,:red) if info['OutOfDate'] == '1'
-#			install_char = pacman_cache_check(info['Name'],info['Version'])
-#			install_stat = colorful(install_char, :underline, :blue)
-#			install_stat = colorful(install_char, :cyan) if install_char == 'I'
-#			install_stat = colorful(install_char, :underline, :red) if install_char == 'U'
+			#			version = colorful(info['Version'],:bold)
+			#			version = colorful(info['Version'],:bold,:red) if info['OutOfDate'] == '1'
+			#			install_char = pacman_cache_check(info['Name'],info['Version'])
+			#			install_stat = colorful(install_char, :underline, :blue)
+			#			install_stat = colorful(install_char, :cyan) if install_char == 'I'
+			#			install_stat = colorful(install_char, :underline, :red) if install_char == 'U'
 
-#			repo = "aur"
-#			puts "[#{install_stat}] #{colorful("#{repo}/#{info['Name']}",:bold,:blue)} (#{version}): #{info['Description']}"
+			#			repo = "aur"
+			#			puts "[#{install_stat}] #{colorful("#{repo}/#{info['Name']}",:bold,:blue)} (#{version}): #{info['Description']}"
 			puts search_style(info['Name'], info['Version'], info['Description'], (info['OutOfDate'] == '1' ? :red : nil))
 
 			end
@@ -323,11 +324,11 @@ def aur_info(names)
 					# Upgradable
 					inst_upg_info = "has an #{colorful('upgrade',:blue)} available" if pacman_cache_check(json['Name'],json['Version']) == 'U'
 
-					puts <<-EOINFO
-					#{colorful(json['Name'],:blue,:bold)} (#{colorful(json['Version'],:bold)}) #{json['Description']}
-					#{json['URL']}
+					puts <<EOINFO
+#{colorful(json['Name'],:blue,:bold)} (#{colorful(json['Version'],:bold)}) #{json['Description']}
+#{json['URL']}
 Released under the '#{colorful(json['License'],:green)}' license. Received #{colorful(json['NumVotes'],:green)} votes. It #{not_ood} out of date.
-					#{json['Name']} #{inst_upg_info}
+#{json['Name']} #{inst_upg_info}
 
 EOINFO
 				end # if $Options[:info]
@@ -420,29 +421,32 @@ end
 def pacnet_cats(category)
 	if category
 		pkgs = json_open("http://pacnet.karbownicki.com/api/json/category/#{category}")
+		p pkgs.class, pkgs.first.class if $Options[:verbose]
+		pkgs.sort! {|pkga, pkgb| pkga['name'] <=> pkgb['name'] }
 		pkgs.each do |pkg|
 			puts search_style(pkg['name'], pkg['version'], pkg['description'])
 		end
+		puts "Found #{colorful(pkgs.size.to_s ,:magenta)} results"
+		pp pkgs if $Options[:verbose]
 	else
 		puts open("http://pacnet.karbownicki.com/api/text/categories").read
 	end
 end
 # Does the styling of a package (whether AUR or Pacman), ready for output in the search results
-# Highlights the package name in the given color (last parameter)
 def search_style(name, version, description, highlight=nil)
-	version = colorful(version,:bold)
-	version = colorful(version,:bold,highlight) if highlight
+	versionc = colorful(version,:bold)
+	versionc = colorful(version,:bold,highlight) if highlight
 	install_char = pacman_cache_check(name, version)
 	install_stat = colorful(install_char, :underline, :blue)
 	install_stat = colorful(install_char, :cyan) if install_char == 'I'
 	install_stat = colorful(install_char, :underline, :red) if install_char == 'U'
-	name = (highlight ? colorful(name,:bold,highlight) : colorful(name,:bold,:blue))
+	name = colorful(name,:bold,:blue)
 
 	# TODO: repo detection code hasn't be written yet, add a repo status
 	# to the results once it's done
-#	repo = "aur"
-#	puts "[#{install_stat}] #{colorful("#{repo}/#{info['Name']}",:bold,:blue)} (#{version}): #{info['Description']}"
-	"[#{install_stat}] #{name} (#{version}): #{description}"
+	#	repo = "aur"
+	#	puts "[#{install_stat}] #{colorful("#{repo}/#{info['Name']}",:bold,:blue)} (#{version}): #{info['Description']}"
+	"[#{install_stat}] #{name} (#{versionc}): #{description}"
 end
 
 if $0 == __FILE__
