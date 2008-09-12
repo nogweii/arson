@@ -7,7 +7,7 @@ arch=(i686 x86_64)
 url="http://bbs.archlinux.org/viewtopic.php?pid=348138"
 license=('GPL')
 source=("http://github.com/evaryont/$pkgname/tarball/v$pkgver")
-md5sums=('390c790c633f1df032d10234113ca45d')
+md5sums=('20dffa613e48c85bbb1d2b327c724d20')
 depends=('ruby' 'rubygems')
 install='arson.install'
 
