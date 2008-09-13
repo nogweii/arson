@@ -177,16 +177,6 @@ def aur_search(keywords)
 			end
 			puts " It's a successful match" if $Options[:verbose]
 			count += 1
-			# name, version, description, [highlight]
-			#			version = colorful(info['Version'],:bold)
-			#			version = colorful(info['Version'],:bold,:red) if info['OutOfDate'] == '1'
-			#			install_char = pacman_cache_check(info['Name'],info['Version'])
-			#			install_stat = colorful(install_char, :underline, :blue)
-			#			install_stat = colorful(install_char, :cyan) if install_char == 'I'
-			#			install_stat = colorful(install_char, :underline, :red) if install_char == 'U'
-
-			#			repo = "aur"
-			#			puts "[#{install_stat}] #{colorful("#{repo}/#{info['Name']}",:bold,:blue)} (#{version}): #{info['Description']}"
 			puts search_style(info['Name'], info['Version'], info['Description'], (info['OutOfDate'] == '1' ? :red : nil))
 
 			end
@@ -212,9 +202,9 @@ def aur_download(packages, dependy=false)
 					FileUtils.chdir($Options[:download_dir]) do |dir|
 						begin
 							no_pkg = false
-							if in_pacman_sync? pkg, "community"
-								puts "Found package #{colorful(pkg,:bold)} in the community repo. Executing pacman..."
-								exec "sudo pacman -S #{pkg}"
+							if repo = is_pacman_pkg? pkg
+								puts "Found package #{colorful(pkg,:bold)} in the #{repo} repo. Downloding from ABS..."
+								abs_pull pkg, repo
 							else
 								puts "Found #{dependy ? 'dependency' : 'package'} #{colorful(pkg,:bold)}! Downloading it now..."
 								open("#{Aur_Domain}/#{info['URLPath']}") do |tar|
@@ -387,8 +377,8 @@ def pacman_check_aur_updates
 
 	for repo in $Options[:foreign]
 		puts "Searching #{repo} for updates in AUR..."
-		Dir["#{repo}/*"].each do |pkg|
-			desc = File.read("#{pkg}/desc")
+		Dir["#{Pacman_Local_Sync % repo}/*"].each do |pkg|
+			desc = File.read(get_package_desc(pkg))
 			cache = {:v => desc[/^%VERSION%\n(.*)/, 1], :n => desc[/^%NAME%\n(.*)/, 1]}
 			aur = json_open(Aur_Info % cache[:n])
 			if aur['type'] == 'error'
@@ -445,8 +435,7 @@ def search_style(name, version, description, highlight=nil)
 	install_stat = colorful(install_char, :underline, :blue)
 	install_stat = colorful(install_char, :cyan) if install_char == 'I'
 	install_stat = colorful(install_char, :underline, :red) if install_char == 'U'
-	repo = (is_pacman_pkg? name) || 'aur'
-	package = colorful("#{repo}/#{name}",:bold,:blue)
+	package = colorful("#{get_package_repo name}/#{name}",:bold,:blue)
 
 	# TODO: repo detection code hasn't be written yet, add a repo status
 	# to the results once it's done
@@ -457,9 +446,30 @@ def is_pacman_pkg?(package)
 	idx = $Options[:repos].map {|repo| in_pacman_sync? package, repo }.index(true)
 	idx ? $Options[:repos][idx] : nil # Since array[nil] doesn't work
 end
+# A slight wrapper around is_pacman_pkg?, changes default nil for 'aur'
+def get_package_repo(package)
+	is_pacman_pkg?(package) || 'aur'
+end
+# Returns the next line in a Pacman pkg description file
+def next_line(pkg, percent)
+	desc = File.read("#{pkg}/desc")
+	cache = {:v => desc[/^%VERSION%\n(.*)/, 1], :n => desc[/^%NAME%\n(.*)/, 1]}
+end
+# Returns the file name of the given pkg's desc file, used by Pacman
+def get_package_desc(pkg)
+	files = Dir["#{Pacman_Local_Sync % repo}/#{pkg}-*"]
+	if files.length == 1
+		"#{files[0]}/desc"
+	else
+		packages = files.map {|file| file.split('/').last.split('-')[0...-2].join('-') == pkg }
+		if packages.include? pkg
+			"#{files[packages.index(pkg)]}/desc"
+		end
+	end
+end
 
 if $0 == __FILE__
-	trap(:INT) { exit 0 } # Exit gracefully
+	trap(:INT) { exit 1 } # Exit gracefully...kinda :)
 
 	begin # opt_parse call
 		opt_parse(ARGV)
