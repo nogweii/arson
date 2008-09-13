@@ -198,9 +198,10 @@ def aur_download(packages, dependy=false)
 					info = json_open(Aur_Info % names[1])['results']
 					puts "Download URL: #{colorful(Aur_Domain+info['URLPath'],:green)}" if $Options[:verbose]
 					puts "#{colorful('WARNING',:red,:bold)}: You are about to download #{colorful(pkg,:bold)}, which has been flagged #{colorful('out of date',:magenta)}!" if info['OutOfDate'] == '1'
+					repo = nil
 					pp info if $Options[:verbose]
 					FileUtils.chdir($Options[:download_dir]) do |dir|
-						begin
+						begin do
 							no_pkg = false
 							if repo = is_pacman_pkg? pkg
 								puts "Found package #{colorful(pkg,:bold)} in the #{repo} repo. Downloding from ABS..."
@@ -235,7 +236,7 @@ def aur_download(packages, dependy=false)
 							else
 								puts colorful("Error downloading #{pkg}: #{e.message}",:red)
 								no_pkg = false # Eh, you never know...
-								exit 1
+#								exit 1
 							end
 						end
 						puts colorful("Extracting #{pkg}.tar.gz",:blue) if $Options[:verbose]
@@ -466,6 +467,63 @@ def get_package_desc(pkg)
 			"#{files[packages.index(pkg)]}/desc"
 		end
 	end
+end
+# Return an array of packages with a unified api, via the use of a Struct
+def pkg_list(name)
+	puts Aur_Search % CGI::escape(name) if $Options[:verbose]
+	puts Pacnet_Search % CGI::escape(name) if $Options[:verbose]
+
+	# --- AUR JSON RPC
+	aur_json = json_open(Aur_Search % CGI::escape(name))
+	pacnet_json = json_open(Pacnet_Search % CGI::escape(name))
+
+	list = []
+
+	# pkg = Package.new(name, version, description, url, license,
+	# 	path, id, votes, ood)
+
+	unless aur_json['type'] == 'error'
+		aur_json['results'].each do |aurp|
+		unless is_pacman_pkg? aurp['Name']
+			puts "Opening Aur_Info url" if $Options[:verbose]
+			info = json_open(Aur_Info % values[1])
+			unless info['type'] == 'error'
+				info = info['results']
+				next if in_pacman_sync?(info['Name'],"community")
+				if keywords.any? do |keyword|
+					print "#{keyword}, " if $Options[:verbose]
+					info['Name'].include? keyword or info['Description'].include? keyword or
+					# Check if there is a filter, then check if either Name or Description has filter within.
+					($Options[:filter] and (info['Name'].include? filter or info['Description'].include? filter))
+				end
+				puts " It's a successful match" if $Options[:verbose]
+				# pkg = Package.new(name, version, description, url, license,
+				# 	path, id, votes, ood, type)
+				list << Package.new(info['Name'], info['Version'], info['Description'], info['URL'], info['License'],
+						    info['URLPath'], info['ID'], info['NumVotes'], (info['OutOfDate'] == '1'), 'aur')
+				end
+			else
+				puts colorful("Error: #{info['results']} for package ID #{values[0]}",:red)
+			end
+		else
+			# pkg = Package.new(name, version, description, url, license,
+			# 	path, id, votes, ood, type)
+			# Pacman package - this code is much simpler due to helper functions! :D
+			list << Package.new(percent_value(pkg, :name), percent_value(pkg, :version), percent_value(pkg, :description), percent_value(pkg, :url), percent_value(pkg, :license), get_package_desc(pkg), percent_value(pkg, :csize), percent_value(pkg, :isize), false, 'pac')
+		end
+		end
+	else
+		puts colorful("Error: #{aur_json['results']}",:red) if $Options[:verbose]
+	end
+
+	if pacnet_json.class == Array # pacnet returns a hash on empty result set
+		pacnet_json.each do |pacn|
+			list << Package.new(percent_value(pacn['name'], :name), percent_value(pacn['name'], :version), percent_value(pacn['name'], :description), percent_value(pacn['name'], :url), percent_value(pacn['name'], :license), get_package_desc(pacn['name']), percent_value(pacn['name'], :csize), percent_value(pacn['name'], :isize), false, 'pac')
+		end
+	end
+
+	# Alphabetical search
+	list.sort {|pkga, pkgb| pkga.name <=> pkgb.name}
 end
 
 if $0 == __FILE__
