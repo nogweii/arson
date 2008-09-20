@@ -30,4 +30,8 @@ local/arson-git 20080825-1 The HOT AUR search helper (git)
 [randy@voodoo arson]$
 
 Fix dependency check when searching for deps that have <=> in dependencies()
+
+Fix --foreign
+
+Fix --filter
 	- Sample: blueproximity

@@ -1,0 +1,95 @@
+# Returns the repo a package is in if it's in pacman's cache, otherwise nil
+def is_pacman_pkg?(package)
+	idx = $Options[:repos].map {|repo| in_pacman_sync? package, repo }.index(true)
+	idx ? $Options[:repos][idx] : nil # Since array[nil] doesn't work
+end
+# A slight wrapper around is_pacman_pkg?, changes default nil for 'aur'
+def get_package_repo(package)
+	is_pacman_pkg?(package) || 'aur'
+end
+# Returns the next line in a Pacman pkg description file
+def percent_value(pkg, percent)
+	desc = File.read(get_package_desc(pkg))
+	desc[/^%#{percent.to_s.upcase}%\n(.*)/, 1]
+end
+# Returns the file name of the given pkg's desc file, used by Pacman
+def get_package_desc(pkg)
+	files = Dir["#{Pacman_Local_Sync % repo}/#{pkg}-*"]
+	if files.length == 1
+		"#{files[0]}/desc"
+	else
+		packages = files.map {|file| file.split('/').last.split('-')[0...-2].join('-') == pkg }
+		if packages.include? pkg
+			"#{files[packages.index(pkg)]}/desc"
+		end
+	end
+end
+# Return an array of packages with a unified api, via the use of a Struct
+def pkg_list(name)
+	puts Aur_Search % CGI::escape(name) if $Options[:verbose]
+	puts Pacnet_Search % CGI::escape(name) if $Options[:verbose]
+
+	# --- AUR JSON RPC
+	aur_json = json_open(Aur_Search % CGI::escape(name))
+	pacnet_json = json_open(Pacnet_Search % CGI::escape(name))
+
+	list = []
+
+	# pkg = Package.new(name, version, description, url, license,
+	# 	path, id, votes, ood)
+
+	unless aur_json['type'] == 'error'
+		aur_json['results'].each do |aurp|
+		unless is_pacman_pkg? aurp['Name']
+			puts "Opening Aur_Info url" if $Options[:verbose]
+			info = json_open(Aur_Info % values[1])
+			unless info['type'] == 'error'
+				info = info['results']
+				next if in_pacman_sync?(info['Name'],"community")
+				if keywords.any? do |keyword|
+					print "#{keyword}, " if $Options[:verbose]
+					info['Name'].include? keyword or info['Description'].include? keyword or
+					# Check if there is a filter, then check if either Name or Description has filter within.
+					($Options[:filter] and (info['Name'].include? filter or info['Description'].include? filter))
+				end
+				puts " It's a successful match" if $Options[:verbose]
+				# pkg = Package.new(name, version, description, url, license,
+				# 	path, id, votes, ood, type)
+				list << Package.new(info['Name'], info['Version'], info['Description'], info['URL'], info['License'],
+						    info['URLPath'], info['ID'], info['NumVotes'], (info['OutOfDate'] == '1'), 'aur')
+				end
+			else
+				puts colorful("Error: #{info['results']} for package ID #{values[0]}",:red)
+			end
+		else
+			# pkg = Package.new(name, version, description, url, license,
+			# 	path, id, votes, ood, type)
+			# Pacman package - this code is much simpler due to helper functions! :D
+			list << Package.new(percent_value(pkg, :name), percent_value(pkg, :version), percent_value(pkg, :description), percent_value(pkg, :url), percent_value(pkg, :license), get_package_desc(pkg), percent_value(pkg, :csize), percent_value(pkg, :isize), false, 'pac')
+		end
+		end
+	else
+		puts colorful("Error: #{aur_json['results']}",:red) if $Options[:verbose]
+	end
+
+	if pacnet_json.class == Array # pacnet returns a hash on empty result set
+		pacnet_json.each do |pacn|
+			list << Package.new(percent_value(pacn['name'], :name), percent_value(pacn['name'], :version), percent_value(pacn['name'], :description), percent_value(pacn['name'], :url), percent_value(pacn['name'], :license), get_package_desc(pacn['name']), percent_value(pacn['name'], :csize), percent_value(pacn['name'], :isize), false, 'pac')
+		end
+	end
+
+	# Alphabetical search
+	list.sort {|pkga, pkgb| pkga.name <=> pkgb.name}
+end
+
+
+
+
+			eyes = (rand > 0.75 ? 'XX' : '00')
+puts <<ASCIIART
+ .-.
+| #{eyes}|    arson v#{ARSON_VERSION.join('.')}
+|   |    Licensed under the GPLv3, all rights reserved
+'^^^'
+ASCIIART
+
