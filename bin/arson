@@ -109,12 +109,17 @@ op.on("--save-to [PATH]", "Directory for arson to download AUR", "packages [Defa
 			$Options[:no_color] = !c
 		end
 		op.on_tail("-V", "--version", "Display the version number") do |v|
-			ghost = []
-			ghost <<  colorful("  .-.", :red,:bold)
-			ghost << (colorful(" | oo|", :red,:bold) << "\tarson v#{ARSON_VERSION.join('.')}")
-			ghost << (colorful(" |   |", :red,:bold) << "\tLicensed under the GPLv3, all rights reserved")
-			ghost <<  colorful(" '^^^'", :red,:bold)
-			puts ghost.join("\n")
+			puts "arson v#{ARSON_VERSION.join('.')}"
+			puts "Copyright (C) 2008 Colin Shea <evaryont@gmx.us>"
+			puts "Licensed under the GPLv3, all rights reserved"
+			puts ""
+			fire = <<FIRE
+     ,.   (   .      )        .      "
+    ("     )  )'     ,'        )  . (`     '`
+  .; )  ' (( (" )    ;(,     ((  (  ;)  "  )"
+  _"., ,._'_.,)_(..,( . )_  _' )_') (. _..( '..
+FIRE
+			puts colorful(fire, :red,:bold)
 			exit 0
 		end
 		op.on_tail("-h", "--help", "Display this help message") do |h|
@@ -125,6 +130,8 @@ op.on("--save-to [PATH]", "Directory for arson to download AUR", "packages [Defa
 			puts <<EOMHELP
 To install all the dependencies (optional or not) of arson, run the following:
 	gem install facets json
+
+Credit to 'jb' for the ASCII art fire. Retrived 23Sept2008 from http://www.ascii-art.de/ascii/def/fire.txt
 EOMHELP
 			exit 0
 		end
@@ -185,12 +192,12 @@ def aur_download(packages, dependy=false)
 	no_pkg = true
 	packages.each do |pkg|
 		if check_existence(pkg)
-			list = aur_list(pkg)
-			list.each do |names|
-				if names[0] == pkg
+			list = pkg_list(pkg)
+			list.each do |package|
+				if package == pkg
 					# Download code
-					info = json_open(Aur_Info % names[1])['results']
-					puts "Download URL: #{colorful(Aur_Domain+info['URLPath'],:green)}" if $Options[:verbose]
+					info = get_info package
+					puts "Download URL: #{colorful(Aur_Domain+info.path,:green)}" if $Options[:verbose]
 					puts "#{colorful('WARNING',:red,:bold)}: You are about to download #{colorful(pkg,:bold)}, which has been flagged #{colorful('out of date',:magenta)}!" if info['OutOfDate'] == '1'
 					pp info if $Options[:verbose]
 					FileUtils.chdir($Options[:download_dir]) do |dir|
@@ -202,7 +209,9 @@ def aur_download(packages, dependy=false)
 								exit 0
 							else
 								puts "Found #{dependy ? 'dependency' : 'package'} #{colorful(pkg,:bold)}! Downloading it now..."
-								open("#{Aur_Domain}/#{info['URLPath']}") do |tar|
+								# TODO: Refactor this d/l code into a seperate function, keeping this and the block of code below in sync.
+								# download_file(url, to)
+								open("#{Aur_Domain}/#{info.path}") do |tar|
 									# Write the stream to a file, b is JIC
 									File.open("#{dir}/#{pkg}.tar.gz", "wb") do |file|
 										puts colorful("Downloading #{pkg}",:blue) if $Options[:verbose]
@@ -246,6 +255,8 @@ def aur_download(packages, dependy=false)
 							FileUtils.rm "#{pkg}.tar.gz" if File.exists? "#{pkg}.tar.gz"
 						end
 
+						# TODO: Remove any versioning requirements before attempting to
+						# d/l again (i.e. 'gcc>=4.3.3')
 						if $Options[:recursive]
 							dependencies = File.readlines("#{pkg}/PKGBUILD").grep(/^(?:make)*depends/).map{|l| l.match(/.*=\((.*)\)$/)[1].gsub("'", '').split(' ')}.flatten.uniq.sort
 							p dependencies if $Options[:verbose]
@@ -264,6 +275,7 @@ def aur_download(packages, dependy=false)
 								aur_download(depend, true) # This is a dependency download
 							end
 						end
+						# NOTE: Is this all really neccessary? Can it be removed?
 						if $Options[:makepkg]
 							system("makepkg -s #{'--nocolor' if $Options[:no_color]}")
 						end
@@ -272,10 +284,12 @@ def aur_download(packages, dependy=false)
 				end
 			end
 			if no_pkg and !dependy
+				# NOTE: This still seems to been seen even when dependy is set
 				puts colorful("Error: No package named '#{pkg}' found",:red)
 				exit 1
 			end
 		else
+			# TODO: Move this further up, make sure to keep the exit line.
 			puts colorful("Error: #{$Options[:download_dir]}/#{pkg} already exists. Pass -f to overwrite it.", :red)
 			exit 1
 		end # if check_existence(pkg)
