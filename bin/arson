@@ -114,10 +114,10 @@ op.on("--save-to [PATH]", "Directory for arson to download AUR", "packages [Defa
 			puts "Licensed under the GPLv3, all rights reserved"
 			puts ""
 			fire = <<FIRE
-     ,.   (   .      )        .      "
-    ("     )  )'     ,'        )  . (`     '`
+     ,.   (   .'     )        .      "
+    ("    ;)  )'   ` ,'     "  )  . (`     '`
   .; )  ' (( (" )    ;(,     ((  (  ;)  "  )"
-  _"., ,._'_.,)_(..,( . )_  _' )_') (. _..( '..
+  _"., ,._'_.,)_(..,( . )_ ,_' )_') (. _..( '..
 FIRE
 			puts colorful(fire, :red,:bold)
 			exit 0
