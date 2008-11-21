@@ -132,6 +132,8 @@ To install all the dependencies (optional or not) of arson, run the following:
 	gem install facets json
 
 Credit to 'jb' for the ASCII art fire. Retrived 23Sept2008 from http://www.ascii-art.de/ascii/def/fire.txt
+
+arson supports downloading from both the AUR and ABS. Both are started via -D, and AUR packages have higher priority than ABS packages! e.g. if there is a pacman pkg called 'arson' and a AUR package called 'arson', the AUR package will be downloaded instead of the abs version. Note that, ABS doesn't work for non-standard repositories! ABS only works with [core], [extra], and [community]
 EOMHELP
 			exit 0
 		end
