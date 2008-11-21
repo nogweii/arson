@@ -205,10 +205,15 @@ def aur_download(packages, dependy=false)
 					FileUtils.chdir($Options[:download_dir]) do |dir|
 						begin
 							no_pkg = false
-							if repo = is_pacman_pkg? pkg && ['core', 'community', 'extra'].include? repo
-								puts "Found package #{colorful(pkg,:bold)} in the community repo. Executing pacman..."
-								abs_pull get_package_repo(pkg), pkg
-								exit 0
+							if repo = is_pacman_pkg? pkg 
+								if ['core', 'community', 'extra'].include? repo
+									puts "Found package #{colorful(pkg,:bold)} in the #{repo} repo. Downloading it from ABS..."
+									abs_pull repo, pkg
+									exit 0
+								else
+									puts "Error: pacman pkg #{pkg} is not in any rsync-capable repoistories."
+									exit 1
+								end
 							else
 								puts "Found #{dependy ? 'dependency' : 'package'} #{colorful(pkg,:bold)}! Downloading it now..."
 								# TODO: Refactor this d/l code into a seperate function, keeping this and the block of code below in sync.
