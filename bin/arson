@@ -205,7 +205,7 @@ def aur_download(packages, dependy=false)
 					FileUtils.chdir($Options[:download_dir]) do |dir|
 						begin
 							no_pkg = false
-							if is_pacman_pkg? pkg
+							if repo = is_pacman_pkg? pkg && ['core', 'community', 'extra'].include? repo
 								puts "Found package #{colorful(pkg,:bold)} in the community repo. Executing pacman..."
 								abs_pull get_package_repo(pkg), pkg
 								exit 0
