@@ -21,7 +21,7 @@ Pacman_Conf = "/etc/pacman.conf"
 Pacnet_Domain = "http://pacnet.karbownicki.com/" 
 Pacnet_Search = "#{Pacnet_Domain}api/json/search/%s"
 Package = Struct.new(:name, :version, :description, :url, :license, :path, :id, :votes, :ood, :repo, :type)
-SimpPkg = Package.new('DUMMY', '1.0', 'This is a dummy package, please tell me, evaryont, if you see this!', 'http://www.google.com', 'gpl', '/packages/arson/arson.tar.gz', '1234', '10', 'false', 'aur', 'aur')
+SimpPkg = Package.new('DUMMY', '1.0', 'This is a dummy package, please tell me, evaryont, if you see this!', 'http://www.example.com', 'gpl', '/packages/arson/arson.tar.gz', '1234', '10', 'false', 'aur', 'aur')
 
 $Options = {}
 # Parse the options, adding the settings to the $Options hash
@@ -205,7 +205,7 @@ def aur_download(packages, dependy=false)
 					FileUtils.chdir($Options[:download_dir]) do |dir|
 						begin
 							no_pkg = false
-							if repo = is_pacman_pkg? pkg 
+							if repo = is_pacman_pkg?(pkg)
 								if ['core', 'community', 'extra'].include? repo
 									puts "Found package #{colorful(pkg,:bold)} in the #{repo} repo. Downloading it from ABS..."
 									abs_pull repo, pkg
