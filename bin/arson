@@ -336,10 +336,10 @@ def aur_info(names)
 					inst_upg_info = "has an #{colorful('upgrade',:blue)} available" if pacman_cache_check(json['Name'],json['Version']) == 'U'
 
 					puts <<EOINFO
-					#{colorful(json['Name'],:blue,:bold)} (#{colorful(json['Version'],:bold)}) #{json['Description']}
-					#{json['URL']}
+#{colorful(json['Name'],:blue,:bold)} (#{colorful(json['Version'],:bold)}) #{json['Description']}
+#{json['URL']}
 Released under the '#{colorful(json['License'],:green)}' license. Received #{colorful(json['NumVotes'],:green)} votes. It #{not_ood} out of date.
-					#{json['Name']} #{inst_upg_info}
+#{json['Name']} #{inst_upg_info}
 
 EOINFO
 				end # if $Options[:info]
