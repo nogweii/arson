@@ -9,7 +9,7 @@
 end
 
 ARSON_VERSION = [0, 8, 12, 'git']
-# Loui's AUR: "http://aur.louipc.yi.org/"
+# Loui's AUR: http://aur.louipc.yi.org/
 # He has a bunch of fixes already, useful to test arson against any seriously new changes
 #Aur_Domain = "http://aur.louipc.yi.org/"
 Aur_Domain = "http://aur.archlinux.org"
@@ -18,8 +18,8 @@ Aur_Info = "#{Aur_Domain}/rpc.php?type=info&arg=%s"
 Pacman_Local_Cache = "/var/lib/pacman/local"
 Pacman_Local_Sync = "/var/lib/pacman/sync/%s"
 Pacman_Conf = "/etc/pacman.conf"
-Pacnet_Domain = "http://pacnet.karbownicki.com/" 
-Pacnet_Search = "#{Pacnet_Domain}api/json/search/%s"
+#Pacnet_Domain = "http://pacnet.karbownicki.com/" 
+#Pacnet_Search = "#{Pacnet_Domain}api/json/search/%s"
 Package = Struct.new(:name, :version, :description, :url, :license, :path, :id, :votes, :ood, :repo, :type)
 SimpPkg = Package.new('DUMMY', '1.0', 'This is a dummy package, please tell me, evaryont, if you see this!', 'http://www.example.com', 'gpl', '/packages/arson/arson.tar.gz', '1234', '10', 'false', 'aur', 'aur')
 
@@ -47,12 +47,8 @@ def opt_parse(args)
 		puts colorful("Warning: Command #{$Options[:command].capitalize} already given, ignoring '-U'",:magenta) if $Options[:command]
 		$Options[:command] ||= :upgrade
 end
-op.on("-C", "--Category", "Find a package based on what category it", "is in") do |c|
-	puts colorful("Warning: Command #{$Options[:command].capitalize} already given, ignoring '-C'",:magenta) if $Options[:command]
-	$Options[:command] ||= :category
-end
 
-#op.separator "\n"
+	#op.separator "\n"
 op.separator "Search options"
 op.on("--filter [KEYWORD]", "Filter search results by this word.", "It is not included in the original AUR", "search. [Default: #{colorful('Show all results',:magenta)}]") do |filter|
 	$Options[:filter] = filter
@@ -426,23 +422,25 @@ def abs_pull(repo, pkg)
 	if File.exists? "/usr/bin/rsync"
 		Dir.chdir($Options[:download_dir])
 		`/usr/bin/rsync -mrt --no-motd --delete-after rsync.archlinux.org::abs/i686/#{repo}/#{pkg} .`
+	else
+		puts "rsync not found in /usr/bin! Either link it or patch arson to use `which', right now this isn't a high priority."
 	end
 end
 # Gets the categories or packages underneath a category
-def pacnet_cats(category)
-	if category
-		pkgs = json_open("http://pacnet.karbownicki.com/api/json/category/#{category}")
-		p pkgs.class, pkgs.first.class if $Options[:verbose]
-		pkgs.sort! {|pkga, pkgb| pkga['name'] <=> pkgb['name'] }
-		pkgs.each do |pkg|
-			puts search_style(get_info pkg['name'])
-		end
-		puts "Found #{colorful(pkgs.size.to_s ,:magenta)} results"
-		pp pkgs if $Options[:verbose]
-	else
-		puts open("http://pacnet.karbownicki.com/api/text/categories").read
-	end
-end
+# def pacnet_cats(category)
+#         if category
+#                 pkgs = json_open("http://pacnet.karbownicki.com/api/json/category/#{category}")
+#                 p pkgs.class, pkgs.first.class if $Options[:verbose]
+#                 pkgs.sort! {|pkga, pkgb| pkga['name'] <=> pkgb['name'] }
+#                 pkgs.each do |pkg|
+#                         puts search_style(get_info pkg['name'])
+#                 end
+#                 puts "Found #{colorful(pkgs.size.to_s ,:magenta)} results"
+#                 pp pkgs if $Options[:verbose]
+#         else
+#                 puts open("http://pacnet.karbownicki.com/api/text/categories").read
+#         end
+# end
 # Does the styling of a package (whether AUR or Pacman), ready for output in the search results
 def search_style(package, highlight=nil)
 	versionc = colorful(package.version,:bold)
@@ -488,7 +486,7 @@ end
 def pkg_list(*names)
 	names.flatten! ; names = names.join(' ')
 	puts Aur_Search % CGI::escape(names) if $Options[:verbose]
-	puts Pacnet_Search % CGI::escape(names) if $Options[:verbose]
+#	puts Pacnet_Search % CGI::escape(names) if $Options[:verbose]
 
 	list = []
 
@@ -500,14 +498,14 @@ def pkg_list(*names)
 			end
 		end
 
-		puts "Pacnet query..." if $Options[:verbose]
+#                 puts "Pacnet query..." if $Options[:verbose]
 
-		pacnet_json = json_open(Pacnet_Search % CGI::escape(names))
-		if pacnet_json.class == Array # pacnet returns a hash on empty result set
-			pacnet_json.each do |pacn|
-				list << pacn['name']
-			end
-		end
+#                 pacnet_json = json_open(Pacnet_Search % CGI::escape(names))
+#                 if pacnet_json.class == Array # pacnet returns a hash on empty result set
+#                         pacnet_json.each do |pacn|
+#                                 list << pacn['name']
+#                         end
+#                 end
 
 	# Package name filter. String.to_rx - Facets method!
 	list = list.grep($Options[:filter].to_rx) if $Options[:filter]
@@ -522,6 +520,7 @@ def get_info(pkg)
 		return Package.new(percent_value(pkg, :name), percent_value(pkg, :version), percent_value(pkg, :desc), percent_value(pkg, :url), percent_value(pkg, :license), get_package_desc(pkg), percent_value(pkg, :csize), percent_value(pkg, :isize), false, repo, 'pac')
 	else
 		# AUR package, go online and get information about it
+		puts Aur_Search % CGI::escape(pkg) if $Options[:verbose]
 		aur_json = json_open(Aur_Search % CGI::escape(pkg))
 		unless aur_json['type'] and aur_json['type'] == 'error'
 			aur_json['results'].each do |aurp|
@@ -575,8 +574,8 @@ if $0 == __FILE__
 		aur_info(ARGV)
 	elsif $Options[:command] == :upgrade
 		pacman_check_aur_updates
-	elsif $Options[:command] == :category
-		pacnet_cats(ARGV[0])
+#         elsif $Options[:command] == :category
+#                 pacnet_cats(ARGV[0])
 	end
 end
 
