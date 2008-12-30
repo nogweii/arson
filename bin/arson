@@ -18,12 +18,11 @@ Aur_Info = "#{Aur_Domain}/rpc.php?type=info&arg=%s"
 Pacman_Local_Cache = "/var/lib/pacman/local"
 Pacman_Local_Sync = "/var/lib/pacman/sync/%s"
 Pacman_Conf = "/etc/pacman.conf"
-#Pacnet_Domain = "http://pacnet.karbownicki.com/" 
-#Pacnet_Search = "#{Pacnet_Domain}api/json/search/%s"
 Package = Struct.new(:name, :version, :description, :url, :license, :path, :id, :votes, :ood, :repo, :type)
 SimpPkg = Package.new('DUMMY', '1.0', 'This is a dummy package, please tell me, evaryont, if you see this!', 'http://www.example.com', 'gpl', '/packages/arson/arson.tar.gz', '1234', '10', 'false', 'aur', 'aur')
 
 $Options = {}
+
 # Parse the options, adding the settings to the $Options hash
 def opt_parse(args)
 	OptionParser.new do |op|
@@ -148,6 +147,7 @@ EOMHELP
 		$Options[:recursive] = true
 	end
 end
+
 # Add ASCII colors to string, using Facet's ANSICode class. effects is a array of symbols that are valid class methods
 def colorful(string, *effects)
 	unless $Options[:no_color] or ARGV.include? "-c" or ARGV.include? "--no-color"
@@ -161,6 +161,7 @@ def colorful(string, *effects)
 		string
 	end
 end
+
 # Opens a given URL and tries parsing the contents as JSON. Returns the resulting hash, no error trapping provided
 def json_open(url)
 	puts "json_open(#{url})" if $Options[:verbose]
@@ -171,6 +172,7 @@ def json_open(url)
 		{}
 	end
 end
+
 # Search the AUR for the array of keywords
 def aur_search(keywords)
 	puts "Searching for #{keywords.join(' & ')}" if $Options[:verbose]
@@ -185,6 +187,7 @@ def aur_search(keywords)
 	end
 	puts "Found #{colorful(count.to_s,:magenta)} results"
 end
+
 # Download a series of packages from AUR and their AUR dependencies
 def aur_download(packages, dependy=false)
 	no_pkg = true
@@ -298,6 +301,7 @@ def aur_download(packages, dependy=false)
 		end # if check_existence(pkg)
 	end # packages.each do |pkg|
 end
+
 # Return an array containing an array of [pkg name, id]
 def aur_list(name)
 	puts Aur_Search % CGI::escape(name) if $Options[:verbose]
@@ -313,6 +317,7 @@ def aur_list(name)
 	end
 	list.sort
 end
+
 # Display info about a package
 def aur_info(names)
 	names.each do |name|
@@ -343,6 +348,7 @@ EOINFO
 		end
 	end
 end
+
 # Returns true or false if pacman has a chached copy of a package at the given version
 def pacman_cache_check(name, version, cached = Pacman_Local_Cache)
 	puts "Checking installation status of #{name}, v#{version}" if $Options[:verbose]
@@ -365,11 +371,13 @@ def pacman_cache_check(name, version, cached = Pacman_Local_Cache)
 		end
 	end
 end
+
 # Check if pacman's db has information about a package being in a repository, regardless of version
 def in_pacman_sync?(name, syncd)
 	syncd = Pacman_Local_Sync % syncd
 	return true if Dir["#{syncd}/#{name}-*"].first
 end
+
 # Using pacman's list of foreign packages, check if any have updates in AUR
 def pacman_check_aur_updates
 	puts "Checking if any foreign packages have updates available in AUR" if $Options[:verbose]
@@ -407,6 +415,7 @@ def pacman_check_aur_updates
 		puts "All foreign packages are up to date."
 	end
 end
+
 # Checks if a package has already been downloaded
 def check_existence(pkg)
 	puts "Checking existence of #{colorful(pkg,:blue)}/" if $Options[:verbose]
@@ -417,6 +426,7 @@ def check_existence(pkg)
 		return true
 	end
 end
+
 # Pulls a package from ABS
 def abs_pull(repo, pkg)
 	if File.exists? "/usr/bin/rsync"
@@ -426,21 +436,7 @@ def abs_pull(repo, pkg)
 		puts "rsync not found in /usr/bin! Either link it or patch arson to use `which', right now this isn't a high priority."
 	end
 end
-# Gets the categories or packages underneath a category
-# def pacnet_cats(category)
-#         if category
-#                 pkgs = json_open("http://pacnet.karbownicki.com/api/json/category/#{category}")
-#                 p pkgs.class, pkgs.first.class if $Options[:verbose]
-#                 pkgs.sort! {|pkga, pkgb| pkga['name'] <=> pkgb['name'] }
-#                 pkgs.each do |pkg|
-#                         puts search_style(get_info pkg['name'])
-#                 end
-#                 puts "Found #{colorful(pkgs.size.to_s ,:magenta)} results"
-#                 pp pkgs if $Options[:verbose]
-#         else
-#                 puts open("http://pacnet.karbownicki.com/api/text/categories").read
-#         end
-# end
+
 # Does the styling of a package (whether AUR or Pacman), ready for output in the search results
 def search_style(package, highlight=nil)
 	versionc = colorful(package.version,:bold)
@@ -453,20 +449,24 @@ def search_style(package, highlight=nil)
 
 	"[#{install_stat}] #{repo} (#{versionc}): #{package.description}"
 end
+
 # Returns the repo a package is in if it's in pacman's cache, otherwise nil
 def is_pacman_pkg?(package)
 	idx = $Options[:repos].map {|repo| in_pacman_sync? package, repo }.index(true)
 	idx ? $Options[:repos][idx] : nil # Since array[nil] doesn't work
 end
+
 # A slight wrapper around is_pacman_pkg?, changes default nil for 'aur'
 def get_package_repo(package)
 	is_pacman_pkg?(package) || 'aur'
 end
+
 # Returns the next line in a Pacman pkg description file
 def percent_value(pkg, percent)
 	desc = get_package_desc(pkg)
 	File.read(desc)[/^%#{percent.to_s.upcase}%\n(.*)/, 1] if File.exists? desc
 end
+
 # Returns the file name of the given pkg's desc file, used by Pacman
 def get_package_desc(pkg)
 	files = Dir["#{Pacman_Local_Sync % get_package_repo(pkg)}/#{pkg}-*"]
@@ -482,30 +482,21 @@ def get_package_desc(pkg)
 		end
 	end
 end
+
 # Return an array of packages with a unified api, via the use of a Struct
 def pkg_list(*names)
 	names.flatten! ; names = names.join(' ')
 	puts Aur_Search % CGI::escape(names) if $Options[:verbose]
-#	puts Pacnet_Search % CGI::escape(names) if $Options[:verbose]
 
 	list = []
 
-		puts "AUR query..." if $Options[:verbose]
-		aur_json = json_open(Aur_Search % CGI::escape(names))
-		unless aur_json['type'] and aur_json['type'] == 'error'
-			aur_json['results'].each do |aurp|
-				list << aurp['Name']
-			end
+	puts "AUR query..." if $Options[:verbose]
+	aur_json = json_open(Aur_Search % CGI::escape(names))
+	unless aur_json['type'] and aur_json['type'] == 'error'
+		aur_json['results'].each do |aurp|
+			list << aurp['Name']
 		end
-
-#                 puts "Pacnet query..." if $Options[:verbose]
-
-#                 pacnet_json = json_open(Pacnet_Search % CGI::escape(names))
-#                 if pacnet_json.class == Array # pacnet returns a hash on empty result set
-#                         pacnet_json.each do |pacn|
-#                                 list << pacn['name']
-#                         end
-#                 end
+	end
 
 	# Package name filter. String.to_rx - Facets method!
 	list = list.grep($Options[:filter].to_rx) if $Options[:filter]
@@ -514,6 +505,7 @@ def pkg_list(*names)
 	# Doesn't sort by repository. Needed?
 	list.uniq.sort
 end
+
 # Returns an instance of Package (a Struct) with information about a package
 def get_info(pkg)
 	if repo = is_pacman_pkg?(pkg)
@@ -574,8 +566,6 @@ if $0 == __FILE__
 		aur_info(ARGV)
 	elsif $Options[:command] == :upgrade
 		pacman_check_aur_updates
-#         elsif $Options[:command] == :category
-#                 pacnet_cats(ARGV[0])
 	end
 end
 
