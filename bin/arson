@@ -47,18 +47,16 @@ def opt_parse(args)
 		$Options[:command] ||= :upgrade
 end
 
-	#op.separator "\n"
 op.separator "Search options"
 op.on("--filter [KEYWORD]", "Filter search results by this word.", "It is not included in the original AUR", "search. [Default: #{colorful('Show all results',:magenta)}]") do |filter|
 	$Options[:filter] = filter
 end
 
-#op.separator "\n"
 op.separator "Download options"
 op.on("--save-to [PATH]", "Directory for arson to download AUR", "packages [Default: #{colorful('Current directory',:magenta)}]") do |h|
 	h = (h[0...1] == "/" ? h : "#{Dir.pwd}/#{h}")
 	if File.exists? h
-		# JIC someone provides a link
+		# JIC someone provides a (symbolic) link
 		$Options[:download_dir] = Pathname.new(h).realpath
 	else
 		puts "Error: #{h} doesn't exist! Please choose a directory that already exists"
@@ -74,12 +72,7 @@ op.on("--save-to [PATH]", "Directory for arson to download AUR", "packages [Defa
   op.on("-r", "--[no-]recursive", "Check the dependency list for other AUR", "packages. [Default: #{colorful('Yes', :magenta)}]") do |recur|
 	  $Options[:recursive] = recur
   end
-  # Maybe - not sure.
-  #  op.on("--makepkg", "Call makepkg to build a package") do |makepkg|
-  #	  $Options[:makepkg] = makepkg
-  #  end
-
-  #  op.separator "\n"
+  
   op.separator "Upgrade options"
   op.on("--foreign [REPO]", "Set all packages within a repository as", "foreign, to be included in the", "upgrade search. This can be repeated", "multiple times. [Default: #{colorful('None', :magenta)}]") do |repo|
 	  unless File.exists? Pacman_Local_Sync % repo
@@ -318,7 +311,7 @@ def aur_list(name)
 	list.sort
 end
 
-# Display info about a package
+# Display information about a package
 def aur_info(names)
 	names.each do |name|
 		puts "Getting package info for #{colorful(name,:red)}" if $Options[:verbose]
@@ -349,7 +342,7 @@ EOINFO
 	end
 end
 
-# Returns true or false if pacman has a chached copy of a package at the given version
+# Returns true or false if pacman has a cached copy of a package at the given version
 def pacman_cache_check(name, version, cached = Pacman_Local_Cache)
 	puts "Checking installation status of #{name}, v#{version}" if $Options[:verbose]
 	if File.exists? "#{cached}/#{name}-#{version}"
@@ -450,7 +443,7 @@ def search_style(package, highlight=nil)
 	"[#{install_stat}] #{repo} (#{versionc}): #{package.description}"
 end
 
-# Returns the repo a package is in if it's in pacman's cache, otherwise nil
+# Returns the repository a package is in if it's in pacman's cache, otherwise nil
 def is_pacman_pkg?(package)
 	idx = $Options[:repos].map {|repo| in_pacman_sync? package, repo }.index(true)
 	idx ? $Options[:repos][idx] : nil # Since array[nil] doesn't work
@@ -467,7 +460,7 @@ def percent_value(pkg, percent)
 	File.read(desc)[/^%#{percent.to_s.upcase}%\n(.*)/, 1] if File.exists? desc
 end
 
-# Returns the file name of the given pkg's desc file, used by Pacman
+# Returns the file name of the given package's desc file, used by Pacman
 def get_package_desc(pkg)
 	files = Dir["#{Pacman_Local_Sync % get_package_repo(pkg)}/#{pkg}-*"]
 	if files.length == 1
@@ -483,7 +476,7 @@ def get_package_desc(pkg)
 	end
 end
 
-# Return an array of packages with a unified api, via the use of a Struct
+# Return an array of packages with a unified API, via the use of a Struct
 def pkg_list(*names)
 	names.flatten! ; names = names.join(' ')
 	puts Aur_Search % CGI::escape(names) if $Options[:verbose]
@@ -531,6 +524,7 @@ def get_info(pkg)
 	#nil # Just being sure, though this *should* never be returned 
 end
 
+# Doing this check allows arson to be require-d and not run automatically.
 if $0 == __FILE__
 	trap(:INT) { exit 0 } # Exit gracefully
 
@@ -553,7 +547,7 @@ if $0 == __FILE__
 	pp $Options if $Options[:verbose]
 
 	$Options[:repos] = File.read(Pacman_Conf).scan(/\[(.*)\]/).flatten
-	# Remove the first repo name (which really isn't a repo anyways).
+	# Remove the first repository name (which really isn't a repository anyways).
 	# This is '[options]'
 	$Options[:repos].reverse! ; $Options[:repos].pop ; $Options[:repos].reverse!
 
