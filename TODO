@@ -29,3 +29,6 @@ Make sure everything is anti-fail code (Daenyth)
 Sort AUR results by date updated (thinkpad)
 
 Option: To show or not to show out-of-date results from AUR
+
+IDEA: Don't write to the hard disk unless no_delete is set. In order to extract the tar ball, keep the contents in-mem (e.g. store it in a variable)
+and then pass it to Zlib::GzipReader & Archive::Tar::Minitar.unpack all in one.
