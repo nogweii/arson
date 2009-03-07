@@ -1,16 +1,10 @@
 ## arg 1:  the new package version
-post_install() {
-  echo ">> Installing JSON and Facets ruby gems, this could take a while..."
-  gem install --remote json facets
-}
-
+## arg 2:  the old package version
 post_upgrade() {
-  echo ">> Make sure the JSON and Facets ruby gems are up to date"
-  echo ">> See arson --more-help for help"
-}
-
-post_remove() {
-  echo ">> The JSON and Facets ruby gems are still installed on your system, if you want to remove them, run 'gem uninstall json facets'"
+  if [ `vercmp $2 0.8.11-2` -eq -1 ]; then
+    echo ">> Arson now uses the packaged versions of the JSON and facets gems"
+    echo ">> Please remove any old versions of those gems (gem uninstall -a facets json)"
+  fi
 }
 
 # vim:set ts=2 sw=2 et:
