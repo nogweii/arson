@@ -8,10 +8,10 @@ require 'arson/colorful'
 
 if ARGV.to_s == ""
 	puts "Please specifiy what to search for as the parameters to this script:"
-	puts "  #{Arson::PROGRAM} pacman"
+	puts Arson.colorful(:italic, "  #{Arson::PROGRAM} pacman")
 	puts ""
 	puts "If you want to download a package, run #{Arson::PROGRAM} as such:"
-	puts "  #{Arson::PROGRAM} aur/arson"
+	puts Arson.colorful(:italic, "  #{Arson::PROGRAM} aur/arson")
 	puts "(note: you can include the -category bit if you wish)"
 	exit 1
 end
