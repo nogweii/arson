@@ -15,7 +15,6 @@ class Arson
 				hash["results"].sort_by{|pkg|[pkg['Name']]}.each do |pkg|
 					# Dir["/var/lib/pacman/sync/community/#{pkg['Name']}-*"].first
 					next if File.exists? "/var/lib/pacman/sync/community/#{pkg['Name']}-#{pkg['Version']}"
-					p pkg if $VERBOSE
 					packages << pkg
 				end
 			end
@@ -35,7 +34,6 @@ class Arson
 				hash["results"].sort_by{|pkg|[pkg['Name']]}.each do |pkg|
 					# Dir["/var/lib/pacman/sync/community/#{pkg['Name']}-*"].first
 					next if File.exists? "/var/lib/pacman/sync/community/#{pkg['Name']}-#{pkg['Version']}"
-					p pkg if $VERBOSE
 					return package if package['Name'] == arg
 				end
 			end
