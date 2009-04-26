@@ -1,7 +1,12 @@
 require 'open-uri'
+require 'zlib'
 require 'rubygems'
 require 'json'
 require 'facets/ansicode'
+require 'facets/minitar'
+
+require 'arson/search'
+require 'arson/download'
 
 class Arson
 	# I wish the AUR had an RPC for these, or replaced CategoryID with the name
@@ -27,5 +32,5 @@ class Arson
 	end ] ) if File.exists? "/etc/pacman.d/color.conf"
 
 	VERSION = "0.9.1"
-	PROGRAM = File.basename(__FILE__)
+	PROGRAM = File.basename($0)
 end
