@@ -19,7 +19,8 @@ Downloading
 
 If you pass arson the parameter "aur/foo" (however many spaces between) it will
 attempt to download the package. Or, if the search results only have 1 result,
-arson will download that package instead of displaying only 1.
+arson will download that package instead of displaying only 1. If you pass the
+category (i.e. "aur-system/arson") arson will understand that as well.
 
 
 -----
@@ -29,3 +30,12 @@ Updating
 If you pass "?" as the only parameter, arson will search through the locally
 installed foreign packages (as reported by `pacman -Qm') and return a list
 of possible updates available in the AUR.
+
+-----
+
+You can not pass anything to arson to get a quick summary of these options.
+
+
+(ps: Yes, I did report arson and dead, and within the hour restart development
+on it. I'm crazy like that, I guess. Also, Daenyth wanted me to continue. Yay
+having people who actually like my software!)
