@@ -33,7 +33,7 @@ class Arson
 		a=line.split("=").map(&:strip); [a[0], a[1].sub(/intensive/, "bold").split.map(&:to_sym)]
 	end ] ) if File.exists? "/etc/pacman.d/color.conf"
 
-	VERSION = "0.9.1"
+	VERSION = [2, 0, 0]
 	PROGRAM = File.basename($0)
 
 	# These will possibly be redefined later.
