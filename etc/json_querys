@@ -1,9 +1,0 @@
-http://aur.archlinux.org/rpc.php?type=%s&arg=%s
-
-type can be
-	- info
-	- search
-
-arg is
-	- pkg ID #
-	- search string, url encoded
