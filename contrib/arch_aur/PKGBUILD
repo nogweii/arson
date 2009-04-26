@@ -1,13 +1,13 @@
 # Contributor: Colin Shea <evaryont@gmx.us>
 pkgname=arson
 pkgver=0.8.11
-pkgrel=2
+pkgrel=3
 pkgdesc="The HOT AUR search helper!"
 arch=(i686 x86_64)
 url="http://bbs.archlinux.org/viewtopic.php?pid=348138"
 license=('GPL')
 source=("http://github.com/evaryont/$pkgname/tarball/v$pkgver")
-md5sums=('61ad44f6fd7e3ff2bba02a7289b7fd7c')
+md5sums=('3e14a25fd5aaeb11a9eed9a3ea2bfdd0')
 depends=(ruby-json ruby-facets)
 install=arson.install
 

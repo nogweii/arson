@@ -1,3 +1,14 @@
-Simple README I should've added way earlier in the development process.
+I no longer have the patience to maintain this program, though that should
+have been obvious to anyone looking at the source - it's one large program
+instead of the multiple files it should have been.
 
-arson is a AUR search helper - soon, though, it's going to be much more than that. (And already is, partially)
+A similar program, aurb by Gigamo has been made, with heavy influence (dare I
+say, based off?) from arson, and therefore is my personal recomendation for
+those people looking for a similar program.
+
+To those that enjoyed arson, and still wish it the best, I leave this here for
+you. Or as an example to the rest of the community of what not to do for a
+program.
+
+aurb link: http://github.com/gigamo/aurb/tree/master
+It's on AUR, of course: http://aur.archlinux.org/packages.php?ID=24395

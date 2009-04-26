@@ -536,7 +536,7 @@ $Options[:repos] = File.read(Pacman_Conf).scan(/\[(.*)\]/).flatten
 #$Options[:repos].reverse! ; $Options[:repos].pop ; $Options[:repos].reverse!
 $Options[:repos].shift # Can't believe I did reverse/pop/reverse... >_<
 
-# Doing this check allows arson to be require-d and not run automatically.
+# Doing this check allows arson to be required and not run automatically.
 if $0 == __FILE__
 	trap(:INT) { exit 0 } # Exit gracefully
 
