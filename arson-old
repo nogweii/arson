@@ -1,0 +1,572 @@
+#!/usr/bin/ruby -wW2
+
+# AUR search program. Uses the RPC/JSON interface to query the db. Requires
+# rubygems and the JSON gem. And a whole lot more now!
+
+# {{{ Require statements
+%w{optparse pp cgi open-uri pathname ftools zlib thread rubygems json facets/version facets/minitar facets/ansicode}.each do |lib|
+	require lib
+end
+
+ARSON_VERSION = [0, 8, 12, 'git']
+# Loui's AUR: http://aur.louipc.yi.org/
+# He has a bunch of fixes already, useful to test arson against any seriously new changes
+#Aur_Domain = "http://aur.louipc.yi.org/"
+Aur_Domain = "http://aur.archlinux.org"
+Aur_Search = "#{Aur_Domain}/rpc.php?type=search&arg=%s"
+Aur_Info = "#{Aur_Domain}/rpc.php?type=info&arg=%s"
+Pacman_Local_Cache = "/var/lib/pacman/local"
+Pacman_Local_Sync = "/var/lib/pacman/sync/%s"
+Pacman_Conf = "/etc/pacman.conf"
+Package = Struct.new(:name, :version, :description, :url, :license, :path, :id, :votes, :ood, :repo, :type)
+SimpPkg = Package.new('DUMMY', '1.0', 'This is a dummy package, please tell me, evaryont, if you see this!', 'http://www.example.com', 'gpl', '/packages/arson/arson.tar.gz', '1234', '10', 'false', 'aur', 'aur')
+
+$Options = {}
+
+# Parse the options, adding the settings to the $Options hash
+def opt_parse(args)
+	OptionParser.new do |op|
+		op.banner = "arson v#{ARSON_VERSION.join('.')} - The #{colorful('HOT',:red)} AUR search helper!"
+		op.separator "Usage: #{colorful('arson',:bold)} [options] -COMMAND KEYWORD1 [KEYWORD2 ...]"
+
+		op.separator "Where -COMMAND is one of:"
+		op.on("-D", "--Download", "Download the AUR package specified") do |c|
+			puts colorful("Warning: ",:magenta,:bold) + colorful("#{$Options[:command].to_s.capitalize} command already given, ignoring '-S'",:magenta) if $Options[:command]
+			$Options[:command] ||= :download
+		end
+		op.on("-S", "--Search", "Search AUR for a package name") do |s|
+			puts colorful("Warning: ",:magenta,:bold) + colorful("#{$Options[:command].to_s.capitalize} command already given, ignoring '-S'",:magenta) if $Options[:command]
+			$Options[:command] ||= :search
+	end
+	op.on("-I", "--Info", "Get information about a package") do |i|
+		puts colorful("Warning: Command #{$Options[:command].capitalize} already given, ignoring '-I'",:magenta) if $Options[:command]
+		$Options[:command] ||= :info
+	end
+	op.on("-U", "--Upgrade", "List of foreign packages which have an", "update available for them in AUR") do |u|
+		puts colorful("Warning: Command #{$Options[:command].capitalize} already given, ignoring '-U'",:magenta) if $Options[:command]
+		$Options[:command] ||= :upgrade
+end
+
+op.separator "Search options"
+op.on("--filter [KEYWORD]", "Filter search results by this word.", "It is not included in the original AUR", "search. [Default: #{colorful('Show all results',:magenta)}]") do |filter|
+	$Options[:filter] = filter
+end
+
+op.separator "Download options"
+op.on("--save-to [PATH]", "Directory for arson to download AUR", "packages [Default: #{colorful('Current directory',:magenta)}]") do |h|
+	h = (h[0...1] == "/" ? h : "#{Dir.pwd}/#{h}")
+	if File.exists? h
+		# JIC someone provides a (symbolic) link
+		$Options[:download_dir] = Pathname.new(h).realpath
+	else
+		puts "Error: #{h} doesn't exist! Please choose a directory that already exists"
+		exit 1
+	end
+  end
+  op.on("-k", "--keep", "Keep the .tar.gz after extracting it ", "[Default: #{colorful('Delete',:magenta)}]") do |x|
+	  $Options[:no_delete] = x
+  end
+  op.on("-f", "--force", "Overwrite the package's extraction target", "if it exists. [Default: #{colorful('Don\'t', :magenta)}]") do |force|
+	  $Options[:force] = force
+  end
+  op.on("-r", "--[no-]recursive", "Check the dependency list for other AUR", "packages. [Default: #{colorful('Yes', :magenta)}]") do |recur|
+	  $Options[:recursive] = recur
+  end
+  
+  op.separator "Upgrade options"
+  op.on("--foreign [REPO]", "Set all packages within a repository as", "foreign, to be included in the", "upgrade search. This can be repeated", "multiple times. [Default: #{colorful('None', :magenta)}]") do |repo|
+	  unless File.exists? Pacman_Local_Sync % repo
+		  puts colorful("Can not find repository #{repo}. Try running `pacman -Sy'?", :red)
+	  end
+	  $Options[:foreign] = ($Options[:foreigns]||[]) << (Pacman_Local_Sync % repo)
+  end
+
+
+  #  op.separator "\n"
+  op.separator "Info options"
+  op.on("-l", "--[no-]long", "Use a more tabular display for output") do |long|
+	  $Options[:long] = long
+		end
+
+		#		op.separator "\n"
+		op.separator "Generic options"
+		op.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+			$Options[:verbose] = v
+		end
+		op.on("-x", "--no-color", "Supress color output [Default: #{colorful('No',:magenta)}]") do |c|
+			$Options[:no_color] = !c
+		end
+		op.on_tail("-V", "--version", "Display the version number") do |v|
+			puts "arson v#{ARSON_VERSION.join('.')}"
+			puts "Copyright (C) 2008 Colin Shea <evaryont@gmx.us>"
+			puts "Licensed under the GPLv3, all rights reserved"
+			puts ""
+			fire = <<FIRE
+     ,.   (   .'     )        .      "
+    ("    ;)  )'   ` ,'     "  )  . (`     '`
+  .; )  ' (( (" )    ;(,     ((  (  ;)  "  )"
+  _"., ,._'_.,)_(..,( . )_ ,_' )_') (. _..( '..
+FIRE
+			puts colorful(fire, :red,:bold)
+			exit 0
+		end
+		op.on_tail("-h", "--help", "Display this help message") do |h|
+			puts op
+			exit 0
+		end
+		op.on_tail("--more-help", "Display even more help") do |mh|
+			puts <<EOMHELP
+To install all the dependencies (optional or not) of arson, run the following:
+	gem install facets json
+
+Credit to 'jb' for the ASCII art fire. Retrived Sept 23, 2008 from http://www.ascii-art.de/ascii/def/fire.txt
+
+arson supports downloading from both the AUR and ABS. Both are started via -D, and AUR packages have higher priority than ABS packages! e.g. if there is a pacman pkg called 'arson' and a AUR package called 'arson', the AUR package will be downloaded instead of the abs version. Note that, ABS doesn't work for non-standard repositories! ABS only works with [core], [extra], and [community]
+EOMHELP
+			exit 0
+		end
+	end.parse!(args)
+
+	# Extra option logic
+	unless $Options[:command]
+		puts colorful("You need to specify a command!",:red)
+		opt_parse(["-h"])
+		exit 1
+	end
+	unless $Options[:download_dir]
+		$Options[:download_dir] = Pathname.new(Dir.pwd).realpath
+	end
+	if $Options[:recursive] == nil
+		$Options[:recursive] = true
+	end
+end
+
+# Add ASCII colors to string, using Facet's ANSICode class. effects is a array of symbols that are valid class methods
+def colorful(string, *effects)
+	unless $Options[:no_color] or ARGV.include? "-c" or ARGV.include? "--no-color"
+		colored = " "
+		effects.each do |ef|
+		colored << "#{ANSICode.send(ef)}"
+		end
+	colored << string << "#{ANSICode.clear}"
+	colored[1..-1]
+	else
+		string
+	end
+end
+
+# Opens a given URL and tries parsing the contents as JSON. Returns the resulting hash, no error trapping provided
+def json_open(url)
+	puts "json_open(#{url})" if $Options[:verbose]
+	begin
+		JSON.parse(open(url).read)
+	rescue Errno::ECONNREFUSED
+		puts "Error: Connection refused - #{url}" if $Options[:verbose]
+		{}
+	end
+end
+
+# Search the AUR for the array of keywords
+def aur_search(keywords)
+	puts "Searching for #{keywords.join(' & ')}" if $Options[:verbose]
+	list = pkg_list(keywords.join(' '))
+	count = 0
+	puts "Checking keywords for #{list.length} results total" if $Options[:verbose]
+	list.each do |pkg|
+		info = get_info pkg
+		next if ($Options[:filter] and (info['Name'].include? filter or info['Description'].include? filter))
+		count += 1
+		puts search_style(info, (info.ood == 'true' ? :red : nil))
+	end
+	puts "Found #{colorful(count.to_s,:magenta)} results"
+end
+
+# Download a series of packages from AUR and their AUR dependencies
+def aur_download(packages, dependy=false)
+	no_pkg = true
+	packages.each do |pkg|
+		if check_existence(pkg)
+			list = pkg_list(pkg)
+			list.each do |package|
+				if package == pkg
+					# Download code
+					info = get_info package
+					puts "Download URL: #{colorful(Aur_Domain+info.path,:green)}" if $Options[:verbose]
+					puts "#{colorful('WARNING',:red,:bold)}: You are about to download #{colorful(pkg,:bold)}, which has been flagged #{colorful('out of date',:magenta)}!" if info['OutOfDate'] == '1'
+					pp info if $Options[:verbose]
+					FileUtils.chdir($Options[:download_dir]) do |dir|
+						begin
+							no_pkg = false
+							if repo = is_pacman_pkg?(pkg)
+								if ['core', 'community', 'extra'].include? repo
+									puts "Found package #{colorful(pkg,:bold)} in the #{repo} repo. Downloading it from ABS..."
+									abs_pull repo, pkg
+									exit 0
+								else
+									puts "Error: pacman pkg #{pkg} is not in any rsync-capable repoistories."
+									exit 1
+								end
+							else
+								puts "Found #{dependy ? 'dependency' : 'package'} #{colorful(pkg,:bold)}! Downloading it now..."
+								# TODO: Refactor this d/l code into a seperate function, keeping this and the block of code below in sync.
+								# download_file(url, to)
+								open("#{Aur_Domain}/#{info.path}") do |tar|
+									# Write the stream to a file, b is JIC
+									File.open("#{dir}/#{pkg}.tar.gz", "wb") do |file|
+										puts colorful("Downloading #{pkg}",:blue) if $Options[:verbose]
+										file.write(tar.read)
+									end
+								end
+							end
+						rescue OpenURI::HTTPError => e
+							if e.message.include? "404"
+								begin
+									no_pkg = false
+									puts "404 Error when downloading #{pkg}, attempting to use the pattern to download" if $Options[:verbose]
+									open("#{Aur_Domain}/packages/#{pkg}/#{pkg}.tar.gz") do |tar|
+										# Write the stream to a file, b is JIC
+										File.open("#{dir}/#{pkg}.tar.gz", "wb") do |file|
+											puts colorful("Downloading #{pkg}",:blue) if $Options[:verbose]
+											file.write(tar.read)
+										end
+									end
+								rescue OpenURI::HTTPError => e
+									puts colorful("Error downloading #{pkg}: #{e.message}",:red)
+									no_pkg = false # Eh, you never know...
+									exit 1
+								end
+							else
+								puts colorful("Error downloading #{pkg}: #{e.message}",:red)
+								no_pkg = false # Eh, you never know...
+								exit 1
+							end
+						end
+						puts colorful("Extracting #{pkg}.tar.gz",:blue) if $Options[:verbose]
+						# Extract the archive
+						tgz = Zlib::GzipReader.new(File.open("#{pkg}.tar.gz", 'rb'))
+						# Extract pkg.tar.gz to `pwd`, instead of `pwd`/pkg
+						Archive::Tar::Minitar.unpack(tgz, Dir.pwd)
+
+						# Checking if pkg.tar.gz is marked to be deleted
+						if $Options[:no_delete]
+							FileUtils.mv "#{pkg}.tar.gz", pkg
+						else
+							FileUtils.rm "#{pkg}.tar.gz" if File.exists? "#{pkg}.tar.gz"
+						end
+
+						if $Options[:recursive]
+							dependencies = File.readlines("#{pkg}/PKGBUILD").grep(/^(?:make)*depends/).map{|l| l.match(/.*=\((.*)\)$/)[1].gsub("'", '').split(' ')}.flatten.uniq.sort.map{|dep| dep.scan(/(.*?)[><=]{1,2}(.*)/).first || [dep]}
+							p dependencies if $Options[:verbose]
+							within = []
+							$Options[:repos].each do |repo|
+								dependencies.each do |depend|
+									if in_pacman_sync? depend[0], repo
+										within << depend[0] unless within.include? depend[0]
+									end
+								end
+							end
+							aurds = dependencies - within
+							p aurds if $Options[:verbose]
+							aurds.each do |depend|
+								# Recursive!!!!
+								aur_download(depend, true) # This is a dependency download
+							end
+						end
+						# NOTE: Is this all really neccessary? Can it be removed?
+#						if $Options[:makepkg]
+#							system("makepkg -s #{'--nocolor' if $Options[:no_color]}")
+#						end
+					end
+
+				end
+			end
+			if no_pkg and !dependy
+				# NOTE: This still seems to been seen even when dependy is set
+				puts colorful("Error: No package named '#{pkg}' found",:red)
+				exit 1
+			end
+		else
+			# TODO: Move this further up, make sure to keep the exit line.
+			puts colorful("Error: #{$Options[:download_dir]}/#{pkg} already exists. Pass -f to overwrite it.", :red)
+			exit 1
+		end # if check_existence(pkg)
+	end # packages.each do |pkg|
+end
+
+# Return an array containing an array of [pkg name, id]
+def aur_list(name)
+	puts Aur_Search % CGI::escape(name) if $Options[:verbose]
+	json = json_open(Aur_Search % CGI::escape(name))
+	list = []
+
+	if json['type'] == 'error'
+		puts colorful("Error: #{json['results']}",:red)
+		exit 1
+	end
+	json['results'].each do |aurp|
+		list << [aurp["Name"], aurp['ID']]
+	end
+	list.sort
+end
+
+# Display information about a package
+def aur_info(names)
+	names.each do |name|
+		puts "Getting package info for #{colorful(name,:red)}" if $Options[:verbose]
+		aur_list(name).each do |pkg|
+			if pkg[0] == name
+				json = json_open(Aur_Info % pkg[1])['results']
+				if $Options[:long]
+					puts json.keys.map{|key| " #{key.rjust(json.keys.sort_by {|key2| key2.length }.last.length)} : #{json[key]}" }
+				else
+					not_ood = (json['OutOfDate'] == '0' ? 'is not' : colorful('is',:red))
+					# Not installed
+					inst_upg_info = "is #{colorful('not installed',:green,:bold)} on your system" if pacman_cache_check(json['Name'],json['Version']) == 'N'
+					# Installed
+					inst_upg_info = "is #{colorful('installed',:green)} on your system" if pacman_cache_check(json['Name'],json['Version']) == 'I'
+					# Upgradable
+					inst_upg_info = "has an #{colorful('upgrade',:blue)} available" if pacman_cache_check(json['Name'],json['Version']) == 'U'
+
+					puts <<EOINFO
+#{colorful(json['Name'],:blue,:bold)} (#{colorful(json['Version'],:bold)}) #{json['Description']}
+#{json['URL']}
+Released under the '#{colorful(json['License'],:green)}' license. Received #{colorful(json['NumVotes'],:green)} votes. It #{not_ood} out of date.
+#{json['Name']} #{inst_upg_info}
+
+EOINFO
+				end # if $Options[:info]
+			end
+		end
+	end
+end
+
+# Returns true or false if pacman has a cached copy of a package at the given version
+def pacman_cache_check(name, version, cached = Pacman_Local_Cache)
+	puts "Checking installation status of #{name}, v#{version}" if $Options[:verbose]
+	if File.exists? "#{cached}/#{name}-#{version}"
+		return 'I'
+	else
+		Dir.chdir(cached) do
+			installed = Dir["#{name}-*"].first
+			if installed
+				iv = VersionNumber.new(installed[name.length+1..-1])
+				pccv = VersionNumber.new(version)
+				if iv > pccv
+					return 'I'
+				elsif pccv > iv
+					return 'U'
+				end
+			else
+				return 'N'
+			end
+		end
+	end
+end
+
+# Check if pacman's db has information about a package being in a repository, regardless of version
+def in_pacman_sync?(name, syncd)
+	syncd = Pacman_Local_Sync % syncd
+	return true if Dir["#{syncd}/#{name}-*"].first
+end
+
+# Using pacman's list of foreign packages, check if any have updates in AUR
+def pacman_check_aur_updates
+	puts "Checking if any foreign packages have updates available in AUR" if $Options[:verbose]
+	found_toggle = false
+
+
+	`pacman -Qm`.each_line do |line|
+		name, version = line.chomp.split
+		aur = json_open(Aur_Info % name)['results']
+		if aur.kind_of?(Hash) and aur['Version'] != version
+			found_toggle = true
+			instver = VersionNumber.new(version)
+			aurver = VersionNumber.new(aur['Version'])
+			puts "#{colorful(name,:bold)} has an update available: #{colorful(version,:red)} -> #{colorful(aur['Version'],:green)}" if aurver > instver
+		end
+	end
+
+	for repo in $Options[:foreign]
+		puts "Searching #{repo} for updates in AUR..."
+		Dir["#{repo}/*"].each do |pkg|
+			desc = File.read("#{pkg}/desc")
+			cache = {:v => desc[/^%VERSION%\n(.*)/, 1], :n => desc[/^%NAME%\n(.*)/, 1]}
+			aur = json_open(Aur_Info % cache[:n])
+			if aur['type'] == 'error'
+				next
+			end
+			found_toggle = true
+			instver = VersionNumber.new(cache[:v])
+			aurver = VersionNumber.new(aur['Version'])
+			puts "#{colorful(name,:bold)} has an update available: #{colorful(version,:red)} -> #{colorful(aur['Version'],:green)}" if aurver > instver
+
+		end
+	end if $Options[:foreign]
+	unless found_toggle
+		puts "All foreign packages are up to date."
+	end
+end
+
+# Checks if a package has already been downloaded
+def check_existence(pkg)
+	puts "Checking existence of #{colorful(pkg,:blue)}/" if $Options[:verbose]
+	return true if $Options[:force]
+	if File.exists?(File.join($Options[:download_dir], pkg))
+		return false
+	else
+		return true
+	end
+end
+
+# Pulls a package from ABS
+def abs_pull(repo, pkg)
+	if File.exists? "/usr/bin/rsync"
+		Dir.chdir($Options[:download_dir])
+		`/usr/bin/rsync -mrt --no-motd --delete-after rsync.archlinux.org::abs/i686/#{repo}/#{pkg} .`
+	else
+		puts "rsync not found in /usr/bin! Either link it or patch arson to use `which', right now this isn't a high priority."
+	end
+end
+
+# Does the styling of a package (whether AUR or Pacman), ready for output in the search results
+def search_style(package, highlight=nil)
+	versionc = colorful(package.version,:bold)
+	versionc = colorful(package.version,:bold,highlight) if highlight
+	install_char = pacman_cache_check(package.name, package.version)
+	install_stat = colorful(install_char, :underline, :blue)
+	install_stat = colorful(install_char, :cyan) if install_char == 'I'
+	install_stat = colorful(install_char, :underline, :red) if install_char == 'U'
+	repo = colorful("#{package.repo}/#{package.name}",:bold,:blue)
+
+	"[#{install_stat}] #{repo} (#{versionc}): #{package.description}"
+end
+
+# Returns the repository a package is in if it's in pacman's cache, otherwise nil
+def is_pacman_pkg?(package)
+	idx = $Options[:repos].map {|repo| in_pacman_sync? package, repo }.index(true)
+	idx ? $Options[:repos][idx] : nil # Since array[nil] doesn't work
+end
+
+# A slight wrapper around is_pacman_pkg?, changes default nil for 'aur'
+def get_package_repo(package)
+	is_pacman_pkg?(package) || 'aur'
+end
+
+# Returns the next line in a Pacman pkg description file
+def percent_value(pkg, percent)
+	desc = get_package_desc(pkg)
+	File.read(desc)[/^%#{percent.to_s.upcase}%\n(.*)/, 1] if File.exists? desc
+end
+
+# Returns the file name of the given package's desc file, used by Pacman
+def get_package_desc(pkg)
+	files = Dir["#{Pacman_Local_Sync % get_package_repo(pkg)}/#{pkg}-*"]
+	if files.length == 1
+		"#{files[0]}/desc"
+	elsif files.length == 0
+		puts "Error: No such local pacakge '#{pkg}'"
+	else
+		packages = files.map {|file| file.split('/').last.split('-')[0...-2].join('-') == pkg }
+		pp packages if $Options[:verbose]
+		if packages.include? true
+			"#{files[packages.index(true)]}/desc"
+		end
+	end
+end
+
+# Return an array of packages with a unified API, via the use of a Struct
+def pkg_list(*names)
+	names.flatten! ; names = names.join(' ')
+	puts Aur_Search % CGI::escape(names) if $Options[:verbose]
+
+	list = []
+
+	puts "AUR query..." if $Options[:verbose]
+	aur_json = json_open(Aur_Search % CGI::escape(names))
+	unless aur_json['type'] and aur_json['type'] == 'error'
+		aur_json['results'].each do |aurp|
+			list << aurp['Name']
+		end
+	end
+
+	# Package name filter. String.to_rx - Facets method!
+	list = list.grep($Options[:filter].to_rx) if $Options[:filter]
+	p list if $Options[:verbose]
+	# Alphabetical sort
+	# Doesn't sort by repository. Needed?
+	list.uniq.sort
+end
+
+# Returns an instance of Package (a Struct) with information about a package
+def get_info(pkg)
+	if repo = is_pacman_pkg?(pkg)
+		return Package.new(percent_value(pkg, :name), percent_value(pkg, :version), percent_value(pkg, :desc), percent_value(pkg, :url), percent_value(pkg, :license), get_package_desc(pkg), percent_value(pkg, :csize), percent_value(pkg, :isize), false, repo, 'pac')
+	else
+		# AUR package, go online and get information about it
+		puts Aur_Search % CGI::escape(pkg) if $Options[:verbose]
+		aur_json = json_open(Aur_Search % CGI::escape(pkg))
+		pp aur_json if $Options[:verbose]
+		pkgs = search_struct(aur_json)
+		return pkgs.find{|struct| struct.name == pkg }
+	end
+	SimpPkg
+end
+
+# Taking the (parsed JSON) hash from the AUR search method, returns an array of Package instances
+def search_struct(hash)
+	if hash['type'] == "search"
+		hash = hash['results']
+	else
+		pp hash if $Options[:verbose]
+		exit 1
+	end
+
+	pkgs = []
+	hash.each do |info|
+		pkgs << Package.new(info['Name'], info['Version'], info['Description'], info['URL'], info['License'],
+			info['URLPath'], info['ID'], info['NumVotes'], (info['OutOfDate'] == '1'), 'aur', 'aur')
+	end
+
+	return pkgs
+end
+
+$Options[:repos] = File.read(Pacman_Conf).scan(/\[(.*)\]/).flatten
+# Remove the first repository name (which really isn't a repository anyways).
+# This is '[options]'
+#$Options[:repos].reverse! ; $Options[:repos].pop ; $Options[:repos].reverse!
+$Options[:repos].shift # Can't believe I did reverse/pop/reverse... >_<
+
+# Doing this check allows arson to be required and not run automatically.
+if $0 == __FILE__
+	trap(:INT) { exit 0 } # Exit gracefully
+
+	begin # opt_parse call
+		opt_parse(ARGV)
+	rescue OptionParser::InvalidOption => e
+		puts colorful("#{e.to_s.capitalize}. Please use only the following:",:red)
+		opt_parse(["-h"])
+	rescue OptionParser::AmbiguousOption => e
+		puts colorful("#{e.to_s.capitalize}. Please make sure that you have only one short argument, regardless of case.", :red)
+		opt_parse(['-h'])
+	end
+
+	if ARGV.size < 1 and ![:upgrade, :category].include? $Options[:command]
+		puts "#{colorful('No keywords found!',:red)} Try using only alphanumeric characters for your keywords."
+		opt_parse(["-h"]) # Force the help message to be displayed
+	end
+
+	pp ARGV if $Options[:verbose]
+	pp $Options if $Options[:verbose]
+
+	if $Options[:command] == :search
+		aur_search(ARGV)
+	elsif $Options[:command] == :download
+		puts "Downloading package#{ARGV.length > 1 ? 's' : ''} to #{colorful($Options[:download_dir],:bold,:magenta)}"
+		aur_download(ARGV)
+	elsif $Options[:command] == :info
+		aur_info(ARGV)
+	elsif $Options[:command] == :upgrade
+		pacman_check_aur_updates
+	end
+end
+
