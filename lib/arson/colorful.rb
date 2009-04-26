@@ -8,7 +8,7 @@ class Arson
 					colored << "#{::ANSICode.send(effect)}"
 				end
 			elsif color.is_a? Symbol
-				colored << "#{::ANSICode.send(effect)}"
+				colored << "#{::ANSICode.send(color)}"
 			else
 				return colorful(color.to_s, string)
 			end
