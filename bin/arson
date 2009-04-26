@@ -7,6 +7,7 @@ require 'arson/colorful'
 
 
 if ARGV.to_s == ""
+	puts "arson #{Arson::VERSION} [Colin 'Evaryont' Shea <evaryont@saphrix.com>]"
 	puts "Please specifiy what to search for as the parameters to this script:"
 	puts Arson.colorful(:italic, "  #{Arson::PROGRAM} pacman")
 	puts ""
