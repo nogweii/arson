@@ -4,9 +4,11 @@ require 'rubygems'
 require 'json'
 require 'facets/ansicode'
 require 'facets/minitar'
+require 'facets/version'
 
 require 'arson/search'
 require 'arson/download'
+require 'arson/upgrade'
 
 class Arson
 	# I wish the AUR had an RPC for these, or replaced CategoryID with the name
@@ -33,4 +35,8 @@ class Arson
 
 	VERSION = "0.9.1"
 	PROGRAM = File.basename($0)
+
+	# These will possibly be redefined later.
+	ASCII_X = '✘'
+       	ASCII_CHECK = '✔'
 end

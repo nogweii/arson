@@ -13,6 +13,8 @@ if ARGV.to_s == ""
 	puts "If you want to download a package, run #{Arson::PROGRAM} as such:"
 	puts Arson.colorful(:italic, "  #{Arson::PROGRAM} aur/arson")
 	puts "(note: you can include the -category bit if you wish)"
+	puts ""
+	puts "Passing '?' to arson will cause it to check for any upgrades"
 	exit 1
 end
 
@@ -20,9 +22,26 @@ if pkg = ARGV.to_s.scan(/^aur(?:-.*)\/(.*)$/).flatten[0]
 	if pkg = Arson.find_exact(pkg)
 		puts "Downloading #{pkg}..."
 		Arson.download(pkg)
+		exit 0
 	else
 		warn "I think you attempted to download a package, but I couldn't find it"
 	end
+end
+
+if ARGV.to_s =~ /\?/
+	print "Checking for upgrades..."
+	$stdout.flush
+	upgrades = Arson.check_upgrades
+	unless upgrades.empty?
+		print "\n"
+		$stdout.flush
+		upgrades.each do |line, new_version|
+			puts "#{line.strip} #{Arson::ASCII_CHECK} #{Arson.colorful("Green", new_version)}"
+		end
+	else
+		puts "Nothing to update"
+	end
+	exit 0
 end
 
 packages = Arson.search(ARGV)
