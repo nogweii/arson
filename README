@@ -1,0 +1,31 @@
+This is arson 2.0, the hot AUR search helper!
+
+There is 3 primary (and only, ever) functions of arson:
+	* Searching
+	* Downloading
+	* Updating
+
+-----
+
+Searching
+
+arson's default fallback action. If arson doesn't understand your parameter,
+it will search the AUR with them (after URL escaping them) and display the
+results to you, in color.
+
+-----
+
+Downloading
+
+If you pass arson the parameter "aur/foo" (however many spaces between) it will
+attempt to download the package. Or, if the search results only have 1 result,
+arson will download that package instead of displaying only 1.
+
+
+-----
+
+Updating
+
+If you pass "?" as the only parameter, arson will search through the locally
+installed foreign packages (as reported by `pacman -Qm') and return a list
+of possible updates available in the AUR.
