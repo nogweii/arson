@@ -1,0 +1,37 @@
+#readme {
+	text-align: center;
+	color: white;
+	float: left;
+	width: 50%;
+}
+
+#links {
+	float: right;
+}
+#links ul {
+	list-style: none;
+}
+#links ul li {
+	height: 24px;
+}
+
+body {
+	background-color: #6e0212;
+}
+
+#readme h1 {
+	font-style: italic;
+}
+
+pre {
+	color: #bcbbba;
+}
+
+a {
+	color: #adebec;
+}
+
+img {
+	border: 0px;
+	padding-right: 4px;
+}
