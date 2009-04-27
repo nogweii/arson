@@ -1,0 +1,11 @@
+--- 
+:has_rdoc: true
+:summary: The HOT AUR search helper
+:email: evaryont@saphrix.com
+:dependencies: 
+- facets
+- json
+:homepage: http://evaryont.github.com/arson/
+:version: "2.0"
+:name: arson
+:author: Colin 'Evaryont' Shea
