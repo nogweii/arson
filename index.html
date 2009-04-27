@@ -25,47 +25,49 @@ pre {
 <!-- embedded below is a copy of the README from the main branch. This may not
      always be up-to-date, so I will need to occansionally update this manually.
      Oh well. -->
-This is arson 2.0, the hot AUR search helper!
+<h1>This is arson 2.0, the hot AUR search helper!</h1>
 
-There is 3 primary (and only, ever) functions of arson:
- * Searching
- * Downloading
- * Updating
+<p>There is 3 primary (and only, ever) functions of arson:</p>
 
------
+<ul>
+<li>Searching</li>
+<li>Downloading</li>
+<li>Updating</li>
+</ul>
 
-Searching
 
-arson's default fall back action. If arson doesn't understand your parameter,
+<hr />
+
+<h3>Searching</h3>
+
+<p>arson's default fall back action. If arson doesn't understand your parameter,
 it will search the AUR with them (after URL escaping them) and display the
-results to you, in color.
+results to you, in color.</p>
 
------
+<hr />
 
-Downloading
+<h3>Downloading</h3>
 
-If you pass arson the parameter "aur/foo" (however many spaces between) it will
+<p>If you pass arson the parameter "aur/foo" (however many spaces between) it will
 attempt to download the package. Or, if the search results only have 1 result,
 arson will download that package instead of displaying only 1. If you pass the
-category (i.e. "aur-system/arson") arson will understand that as well.
+category (i.e. "aur-system/arson") arson will understand that as well.</p>
 
+<hr />
 
------
+<h3>Updating</h3>
 
-Updating
-
-If you pass "?" as the only parameter, arson will search through the locally
+<p>If you pass "?" as the only parameter, arson will search through the locally
 installed foreign packages (as reported by `pacman -Qm') and return a list
-of possible updates available in the AUR.
+of possible updates available in the AUR.</p>
 
------
+<hr />
 
-You can not pass anything to arson to get a quick summary of these options.
+<p>You can not pass anything to arson to get a quick summary of these options.</p>
 
-
-(ps: Yes, I did report arson as dead, and within the hour restart development
-on it. I'm crazy like that, I guess. Also, Daenyth wanted me to continue. Yay
-having people who actually like my software!)
+<p>(ps: Yes, I did report arson as dead, and within the hour restart development
+on it. I'm crazy like that, I guess. Also, Daenyth and rson wanted me to
+continue. Yay having people who actually like my software!)</p>
 
 <a href="http://github.com/evaryont/arson"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_white_ffffff.png" alt="Fork me on GitHub" /></a>
 </body></html>
