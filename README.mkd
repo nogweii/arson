@@ -1,13 +1,14 @@
-This is arson 2.0, the hot AUR search helper!
+# This is arson 2.0, the hot AUR search helper!
 
 There is 3 primary (and only, ever) functions of arson:
-	* Searching
-	* Downloading
-	* Updating
+
+* Searching
+* Downloading
+* Updating
 
 -----
 
-Searching
+## Searching
 
 arson's default fall back action. If arson doesn't understand your parameter,
 it will search the AUR with them (after URL escaping them) and display the
@@ -15,7 +16,7 @@ results to you, in color.
 
 -----
 
-Downloading
+## Downloading
 
 If you pass arson the parameter "aur/foo" (however many spaces between) it will
 attempt to download the package. Or, if the search results only have 1 result,
@@ -25,7 +26,7 @@ category (i.e. "aur-system/arson") arson will understand that as well.
 
 -----
 
-Updating
+## Updating
 
 If you pass "?" as the only parameter, arson will search through the locally
 installed foreign packages (as reported by `pacman -Qm') and return a list
@@ -37,5 +38,5 @@ You can not pass anything to arson to get a quick summary of these options.
 
 
 (ps: Yes, I did report arson as dead, and within the hour restart development
-on it. I'm crazy like that, I guess. Also, Daenyth wanted me to continue. Yay
-having people who actually like my software!)
+on it. I'm crazy like that, I guess. Also, Daenyth and rson wanted me to
+continue. Yay having people who actually like my software!)
