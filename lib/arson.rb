@@ -6,6 +6,7 @@ require 'facets/ansicode'
 require 'facets/minitar'
 require 'facets/version'
 
+require 'arson/version'
 require 'arson/search'
 require 'arson/download'
 require 'arson/upgrade'
@@ -33,7 +34,6 @@ class Arson
 		a=line.split("=").map(&:strip); [a[0], a[1].sub(/intensive/, "bold").split.map(&:to_sym)]
 	end ] ) if File.exists? "/etc/pacman.d/color.conf"
 
-	VERSION = [2, 0, 0]
 	PROGRAM = File.basename($0)
 
 	# These will possibly be redefined later.
