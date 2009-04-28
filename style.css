@@ -5,9 +5,10 @@
 	width: 50%;
 }
 
-#links {
+#right {
 	float: right;
 }
+
 #links ul {
 	list-style: none;
 }
@@ -34,4 +35,8 @@ a {
 img {
 	border: 0px;
 	padding-right: 4px;
+}
+
+#buttons ul {
+	list-style: none;
 }
