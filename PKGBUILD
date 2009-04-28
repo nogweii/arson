@@ -15,7 +15,7 @@ md5sums=('0b88cc61664bb566f78be9f9b969e703')
 
 build() {
   cd $srcdir
-  gem install --ignore-dependencies -i "$pkgdir/usr/lib/ruby/gems/1.8" -n "$pkgdir/bin" $filename
+  gem install --ignore-dependencies -i "$pkgdir/usr/lib/ruby/gems/1.8" -n "$pkgdir/usr/bin" $filename
 }
 
 
