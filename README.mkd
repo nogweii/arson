@@ -6,11 +6,20 @@ There is 3 primary (and only, ever) functions of arson:
 * Downloading
 * Updating
 
------
+## Getting arson
+
+You can get arson 2 ways:
+
+* As a Ruby gem
+      gem install evaryont-arson --source http://gems.github.com
+* Cloning the git repository
+      git clone git://github.com/evaryont/arson.git
+
+## Using arson
 
 ### Searching
 
-arson's default fall back action. If arson doesn't understand your parameter,
+arson's default fall back action. If arson doesn't understand your parameter(s),
 it will search the AUR with them (after URL escaping them) and display the
 results to you, in color.
 
