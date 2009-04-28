@@ -2,22 +2,25 @@
 	text-align: center;
 	color: white;
 	float: left;
-	width: 50%;
+	width: 75%;
 }
 
 #right {
 	float: right;
 }
 
-#links ul {
+#links {
 	list-style: none;
+	padding-bottom: 25%;
 }
-#links ul li {
+#links li {
 	height: 24px;
 }
 
 body {
 	background-color: #6e0212;
+	margin: 0px;
+	padding: 0px;
 }
 
 #readme h1 {
@@ -37,6 +40,11 @@ img {
 	padding-right: 4px;
 }
 
-#buttons ul {
+#buttons {
 	list-style: none;
+}
+#buttons li {
+	margin: 0px;
+	padding: 0px;
+	line-height: 0px;
 }
