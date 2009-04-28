@@ -1,7 +1,7 @@
 # Contributor: Colin 'Evaryont' Shea <evaryont@saphrix.com>
 pkgname=arson
 pkgver=2.0.0
-pkgrel=1
+pkgrel=2
 pkgdesc="The HOT AUR search helper!"
 arch=(any)
 url="http://evaryont.github.com/arson/"
@@ -15,7 +15,7 @@ md5sums=('0b88cc61664bb566f78be9f9b969e703')
 
 build() {
   cd $srcdir
-  gem install --ignore-dependencies -i "$pkgdir/usr/lib/ruby/gems/1.8" $filename
+  gem install --ignore-dependencies -i "$pkgdir/usr/lib/ruby/gems/1.8" -n "$pkgdir/bin" $filename
 }
 
 
