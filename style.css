@@ -7,6 +7,12 @@
 
 #right {
 	float: right;
+	width: 20%;
+	overflow: hidden;
+}
+#right > ul {
+	position: relative;
+	right: 0px;
 }
 
 #links {
@@ -42,9 +48,18 @@ img {
 
 #buttons {
 	list-style: none;
+	margin-bottom: 2em;
 }
 #buttons li {
 	margin: 0px;
 	padding: 0px;
 	line-height: 0px;
+}
+
+html > body > div > div#right > div > div a {
+	color: rgb(107, 141, 207);
+}
+
+html > body > div > div#right > div > div {
+	width: 20em;
 }
