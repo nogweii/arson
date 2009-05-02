@@ -19,9 +19,10 @@ if ARGV.to_s == ""
 	exit 1
 end
 
-if pkg = ARGV.to_s.scan(/^aur(?:-.*)\/(.*)$/).flatten[0]
+# Old regexp /^aur(?:-.*)\/(.*)$/
+if pkg = ARGV.to_s.scan(/aur(-.*?)?\/(.*)/i).flatten[1]
 	if pkg = Arson.find_exact(pkg)
-		puts "Downloading #{pkg}..."
+		puts "Downloading #{pkg['Name']}..."
 		Arson.download(pkg)
 		exit 0
 	else
@@ -68,7 +69,7 @@ if packages.length > 1
 	else
 		exec "/usr/bin/pacman -Ss #{ARGV.join(' ')}"
 	end
-else
+elsif packages.length == 1
 	puts "Downloading #{packages.first['Name']}..."
 	Arson.download(packages.first)
 end
