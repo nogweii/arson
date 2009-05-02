@@ -2,16 +2,16 @@
 
 Gem::Specification.new do |s|
   s.name = %q{arson}
-  s.version = "2.0.0"
+  s.version = "2.0.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Colin 'Evaryont' Shea"]
-  s.date = %q{2009-04-28}
+  s.date = %q{2009-05-02}
   s.default_executable = %q{arson}
   s.description = %q{The HOT AUR search helper}
   s.email = %q{evaryont@saphrix.com}
   s.executables = ["arson"]
-  s.files = ["README.mkd", "Rakefile", "VERSION.yml", "arson.gemspec", "bin/arson", "lib/arson.rb", "lib/arson/colorful.rb", "lib/arson/download.rb", "lib/arson/search.rb", "lib/arson/upgrade.rb", "lib/arson/version.rb"]
+  s.files = ["PKGBUILD", "README.mkd", "Rakefile", "VERSION.yml", "arson.gemspec", "bin/arson", "lib/arson.rb", "lib/arson/colorful.rb", "lib/arson/download.rb", "lib/arson/search.rb", "lib/arson/upgrade.rb", "lib/arson/version.rb"]
   s.has_rdoc = true
   s.homepage = %q{http://evaryont.github.com/arson/}
   s.rdoc_options = ["--inline-source", "--charset=UTF-8"]
