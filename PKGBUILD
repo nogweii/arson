@@ -1,6 +1,6 @@
 # Contributor: Colin 'Evaryont' Shea <evaryont@saphrix.com>
 pkgname=arson
-pkgver=2.0.1
+pkgver=2.0.2
 pkgrel=1
 pkgdesc="The HOT AUR search helper!"
 arch=(any)
@@ -11,7 +11,7 @@ makedepends=(rubygems)
 filename="evaryont-$pkgname-$pkgver.gem"
 source=(http://gems.github.com/gems/$filename)
 noextract=($filename)
-md5sums=('4ce53c86823a0df27696077780951049')
+md5sums=('978da401438c6d18b78ad0e89254111a')
 
 build() {
   cd $srcdir
