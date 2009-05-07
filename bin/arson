@@ -27,6 +27,7 @@ if pkg = ARGV.to_s.scan(/aur(-.*?)?\/(.*)/i).flatten[1]
 		exit 0
 	else
 		warn "I think you attempted to download a package, but I couldn't find it"
+		exit 0
 	end
 end
 
@@ -63,13 +64,14 @@ if packages.length > 1
 		HERE
 		$stdout.flush
 	end
-
-	if File.exists? "/usr/bin/pacman-color"
-		exec "/usr/bin/pacman-color -Ss #{ARGV.join(' ')}"
-	else
-		exec "/usr/bin/pacman -Ss #{ARGV.join(' ')}"
-	end
 elsif packages.length == 1
 	puts "Downloading #{packages.first['Name']}..."
 	Arson.download(packages.first)
+	exit 0
+end
+
+if File.exists? "/usr/bin/pacman-color"
+	exec "/usr/bin/pacman-color -Ss #{ARGV.join(' ')}"
+else
+	exec "/usr/bin/pacman -Ss #{ARGV.join(' ')}"
 end
