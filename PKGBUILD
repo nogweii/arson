@@ -11,7 +11,7 @@ makedepends=(rubygems)
 filename="evaryont-$pkgname-$pkgver.gem"
 source=(http://gems.github.com/gems/$filename)
 noextract=($filename)
-md5sums=('978da401438c6d18b78ad0e89254111a')
+md5sums=('f509e388af796c211e53266a5fb34114')
 
 build() {
   cd $srcdir
