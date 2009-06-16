@@ -11,11 +11,11 @@ makedepends=(rubygems)
 filename="evaryont-$pkgname-$pkgver.gem"
 source=(http://gems.github.com/gems/$filename)
 noextract=($filename)
-md5sums=('f509e388af796c211e53266a5fb34114')
+md5sums=('ae846fc3da1937d0889da5482e71e491')
 
 build() {
   cd $srcdir
-  gem install --ignore-dependencies -i "$pkgdir/usr/lib/ruby/gems/1.8" -n "$pkgdir/usr/bin" $filename
+  gem install --ignore-dependencies --no-rdoc --no-ri -i "$pkgdir/usr/lib/ruby/gems/1.8" -n "$pkgdir/usr/bin" $filename
 }
 
 
