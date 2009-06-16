@@ -39,7 +39,7 @@ if ARGV.to_s =~ /\?/
 		print "\n"
 		$stdout.flush
 		upgrades.each do |line, new_version|
-			puts "#{line.strip} #{Arson::ASCII_CHECK} #{Arson.colorful("Green", new_version)}"
+			puts "#{line.strip} #{Arson.colorful("Green", new_version)}"
 		end
 	else
 		puts "Nothing to update"

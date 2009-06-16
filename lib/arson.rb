@@ -35,8 +35,4 @@ class Arson
 	end ] ) if File.exists? "/etc/pacman.d/color.conf"
 
 	PROGRAM = File.basename($0)
-
-	# These will possibly be redefined later.
-	ASCII_X = '✘'
-       	ASCII_CHECK = '✔'
 end
