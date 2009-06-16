@@ -1,6 +1,6 @@
 # This is arson 2.0, the hot AUR search helper!
 
-There is 3 primary (and only, ever) functions of arson:
+There is 3 functions of arson:
 
 * Searching
 * Downloading
@@ -27,25 +27,24 @@ results to you, in color.
 
 ### Downloading
 
-If you pass arson the parameter "aur/foo" (however many spaces between) it will
-attempt to download the package. Or, if the search results only have 1 result,
-arson will download that package instead of displaying only 1. If you pass the
-category (i.e. "aur-system/arson") arson will understand that as well.
-
+To download a package, pass "-d" to arson. Any other arguments will be converted
+into a single string (space separated) and arson will try to download a package
+with that exact name. e.g.:
+	arson -d arson # Downloads the package "arson"
+	arson -d pacman color # Downloads the package "pacman color"
+arson won't perform any clean up on the passed parameters, so (using the 2nd
+example) arson will try to find the 'pacman color' package while you probably
+meant the 'pacman-color' package.
 
 -----
 
 ### Updating
 
-If you pass "?" as the only parameter, arson will search through the locally
-installed foreign packages (as reported by `pacman -Qm') and return a list
-of possible updates available in the AUR.
+If you pass -u to arson, it will search through the locally installed foreign
+packages (as reported by `pacman -Qm') and return a list of possible updates
+available in the AUR.
 
 -----
 
-You can not pass anything to arson to get a quick summary of these options.
-
-
-(ps: Yes, I did report arson as dead, and within the hour restart development
-on it. I'm crazy like that, I guess. Also, Daenyth and rson wanted me to
-continue. Yay having people who actually like my software!)
+You can not pass anything or pass -h or --help to arson to get a quick summary of
+these options.
