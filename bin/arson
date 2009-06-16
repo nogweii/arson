@@ -12,11 +12,11 @@ options = {:download => 0}
 opts = OptionParser.new do |opts|
 	opts.banner = "Usage: arson [options]"
 
-	opts.on("-d", "--download", "Download the exact package name", "Repeating this will download other depenedencies in AUR") do |v|
+	opts.on("-d", "--download", "Download the exact package name", "Repeating this will download other depenedencies in AUR") do
 		options[:download] += 1
 	end
 
-	opts.on("-u", "--upgrade", "Check for upgrades") do |v|
+	opts.on("-u", "--upgrade", "Check for upgrades") do
 		options[:upgrade] = true
 	end
 
@@ -34,6 +34,11 @@ opts = OptionParser.new do |opts|
 
 end
 ARGV.empty? ? opts.parse!(["-h"]) : opts.parse!(ARGV)
+
+if options[:download] > 0 and ARGV.empty?
+	warn "Missing names of packages to download!"
+	exit 1
+end
 
 if options[:upgrade]
 	print "Checking for upgrades..."
@@ -84,7 +89,7 @@ elsif packages.length == 1
 end
 
 if Arson::Config["run-pacman"]
-	if File.exists? "/usr/bin/pacman-color"
+	if File.exists? "/usr/bin/pacman-color" and Arson::Config["color"]
 		exec "/usr/bin/pacman-color -Ss #{ARGV.join(' ')}"
 	else
 		exec "/usr/bin/pacman -Ss #{ARGV.join(' ')}"

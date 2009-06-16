@@ -1,7 +1,7 @@
 class Arson
 	class << self
 		def colorful(color, string)
-			return string unless $stdout.tty?
+			return string unless $stdout.tty? and Arson::Config["color"]
 			colored = ""
 			if color.is_a? String
 				Colors[color].each do |effect|

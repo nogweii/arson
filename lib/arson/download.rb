@@ -20,16 +20,18 @@ class Arson
 		# After the file is downloaded, it is attempted to be unpacked using
 		# tar and gunzip formats.
 		def real_download(url)
-			open(url) do |tar|
-				# Write the stream to a file, b is JIC
-				File.open(File.basename(url), "wb") do |file|
-					file.write(tar.read)
+			Dir.chdir(Arson::Config["dir"]) do
+				open(url) do |tar|
+					# Write the stream to a file, b (binary) is JIC
+					File.open(File.basename(url), "wb") do |file|
+						file.write(tar.read)
+					end
 				end
+				tgz = Zlib::GzipReader.new(File.open(File.basename(url), 'rb'))
+				# Extract pkg.tar.gz to `pwd`, instead of `pwd`/pkg
+				Archive::Tar::Minitar.unpack(tgz, Dir.pwd)
+				FileUtils.mv File.basename(url), File.join(Dir.pwd, File.basename(url)[0..-8])
 			end
-			tgz = Zlib::GzipReader.new(File.open(File.basename(url), 'rb'))
-			# Extract pkg.tar.gz to `pwd`, instead of `pwd`/pkg
-			Archive::Tar::Minitar.unpack(tgz, Dir.pwd)
-			FileUtils.mv File.basename(url), File.join(Dir.pwd, File.basename(url)[0..-8])
 		end
 	end
 end

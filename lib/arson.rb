@@ -7,6 +7,7 @@ require 'facets/minitar'
 require 'facets/version'
 
 require 'arson/version'
+require 'arson/config'
 require 'arson/search'
 require 'arson/download'
 require 'arson/upgrade'
@@ -18,6 +19,7 @@ class Arson
 	Categories = %w{nil nil daemons devel editors emulators games gnome
 			i18n kde lib modules multimedia network office
 			science system x11 xfce kernels}
+
 	# Defaults from pacman-color
 	Colors = {"Magenta" => [:bold, :magenta],
 		  "White" => [:bold],
@@ -29,9 +31,10 @@ class Arson
 	# And support for user modifications. Note that inline comments (ie 
 	# "White = gray # blah blah") aren't supported and cause this to crash
 	Colors.merge!( Hash[ open("/etc/pacman.d/color.conf").readlines.map(&:strip).reject do |line|
-		line=~ /^#/||line=~ /^$/
+		line=~ /^#/ || line=~ /^$/
 	end.map do |line|
-		a=line.split("=").map(&:strip); [a[0], a[1].sub(/intensive/, "bold").split.map(&:to_sym)]
+		array = line.split("=").map(&:strip)
+		[a[0], a[1].sub(/intensive/, "bold").split.map(&:to_sym)]
 	end ] ) if File.exists? "/etc/pacman.d/color.conf"
 
 	PROGRAM = File.basename($0)
