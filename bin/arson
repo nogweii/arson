@@ -55,14 +55,17 @@ if options[:upgrade]
 	end
 	exit 0
 elsif options[:download] > 0
-	if pkg = Arson.find_exact(pkg)
-		puts "Downloading #{pkg['Name']}..."
-		Arson.download(pkg)
-		exit 0
-	else
-		warn "No such package '#{pkg}'"
-		exit 1
+	exit_code = 0
+	ARGV.each do |pkg|
+		if pkg = Arson.find_exact(pkg)
+			puts "Downloading #{pkg['Name']}..."
+			Arson.download(pkg)
+		else
+			warn "No such package '#{pkg}'"
+			exit_code = 1
+		end
 	end
+	exit exit_code
 end
 
 packages = Arson.search(ARGV)
