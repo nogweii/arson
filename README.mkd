@@ -27,24 +27,30 @@ results to you, in color.
 
 ### Downloading
 
-To download a package, pass "-d" to arson. Any other arguments will be converted
-into a single string (space separated) and arson will try to download a package
-with that exact name. e.g.:
+To download a package, pass `-d` to arson. Any other arguments will be converted
+into package names and arson will try to download a package with that exact
+name. e.g.:
 	arson -d arson # Downloads the package "arson"
-	arson -d pacman color # Downloads the package "pacman color"
+	arson -d pacman color # Downloads the packages "pacman" and "color"
 arson won't perform any clean up on the passed parameters, so (using the 2nd
-example) arson will try to find the 'pacman color' package while you probably
-meant the 'pacman-color' package.
+example) arson will try to find the 'pacman' and 'color' packages while you
+probably meant the 'pacman-color' package.
 
 -----
 
 ### Updating
 
 If you pass -u to arson, it will search through the locally installed foreign
-packages (as reported by `pacman -Qm') and return a list of possible updates
+packages (as reported by `pacman -Qm`) and return a list of possible updates
 available in the AUR.
 
 -----
 
-You can not pass anything or pass -h or --help to arson to get a quick summary of
+You can not pass anything or pass `-h` or `--help` to arson to get a quick summary of
 these options.
+
+## Configuration
+
+arson has a configuration file located at `~/.arson.yaml`. Look at the
+[wiki page](http://wiki.github.com/evaryont/arson/config) for details about
+what each option does.
