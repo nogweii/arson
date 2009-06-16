@@ -6,6 +6,8 @@ require 'arson'
 require 'arson/colorful'
 require 'optparse'
 
+Arson::Config.write unless File.exists? Arson::Config::FILE_PATH
+
 options = {:download => 0}
 opts = OptionParser.new do |opts|
 	opts.banner = "Usage: arson [options]"
@@ -81,8 +83,10 @@ elsif packages.length == 1
 	exit 0
 end
 
-if File.exists? "/usr/bin/pacman-color"
-	exec "/usr/bin/pacman-color -Ss #{ARGV.join(' ')}"
-else
-	exec "/usr/bin/pacman -Ss #{ARGV.join(' ')}"
+if Arson::Config["run-pacman"]
+	if File.exists? "/usr/bin/pacman-color"
+		exec "/usr/bin/pacman-color -Ss #{ARGV.join(' ')}"
+	else
+		exec "/usr/bin/pacman -Ss #{ARGV.join(' ')}"
+	end
 end
