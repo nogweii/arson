@@ -14,6 +14,8 @@ if ARGV.to_s == ""
 	puts "If you want to download a package, run #{Arson::PROGRAM} as such:"
 	puts Arson.colorful(:italic, "  #{Arson::PROGRAM} aur/arson")
 	puts "(note: you can include the -category bit if you wish)"
+	puts "To grab the PKGBUILD from ABS, call arson as such:"
+	puts Arson.colorful(:italic, "  #{Arson::PROGRAM} abs/pacman")
 	puts ""
 	puts "Passing '?' to arson will cause it to check for any upgrades"
 	exit 1
@@ -27,6 +29,17 @@ if pkg = ARGV.to_s.scan(/aur(-.*?)?\/(.*)/i).flatten[1]
 		exit 0
 	else
 		warn "I think you attempted to download a package, but I couldn't find it"
+		exit 0
+	end
+end
+if pkg = ARGV.to_s.scan(/abs\/(.*)/i).flatten[1]
+	if File.exists? "/usr/bin/rsync"
+		puts "Grabbing #{pkg['Name']} from ABS..."
+		repo = Dir["/var/lib/pacman/sync/**/*/#{pkg}-*"].first.match(%r{/var/lib/pacman/sync/(.*?)/.*$})[1]
+		`/usr/bin/rsync -mrt --no-motd --delete-after rsync.archlinux.org::abs/`uname -m`/#{repo}/#{pkg} .`
+		exit 0
+	else
+		warn "I think you attempted to grab a package from the ABS, but I couldn't find an rsync binary"
 		exit 0
 	end
 end
