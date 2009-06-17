@@ -1,6 +1,6 @@
 # Contributor: Colin 'Evaryont' Shea <evaryont@saphrix.com>
 pkgname=arson
-pkgver=2.1.1
+pkgver=2.1.2
 pkgrel=1
 pkgdesc="The HOT AUR search helper!"
 arch=(any)

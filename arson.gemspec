@@ -2,11 +2,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{arson}
-  s.version = "2.1.1"
+  s.version = "2.1.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Colin 'Evaryont' Shea"]
-  s.date = %q{2009-06-16}
+  s.date = %q{2009-06-17}
   s.default_executable = %q{arson}
   s.description = %q{The HOT AUR search helper}
   s.email = %q{evaryont@saphrix.com}
