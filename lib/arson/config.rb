@@ -8,7 +8,7 @@ class Arson
 		# The loaded configuration
 		LOADED_YAML = File.exists?(FILE_PATH) ? open(FILE_PATH) {|f| YAML::load(f) } : {}
 		# Default configuration values
-		DEFAULTS = {"dir" => File.expand_path("~"), "pacman" => true, "color" => true}
+		DEFAULTS = {"dir" => File.expand_path("~"), "pacman" => true, "color" => true, "single_download" => false}
 		# Merged values representing a combination of the user's choices
 		# and the defaults
 		MERGED = LOADED_YAML ? DEFAULTS.merge(LOADED_YAML) : DEFAULTS

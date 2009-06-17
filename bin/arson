@@ -85,7 +85,7 @@ if packages.length > 1
 		HERE
 		$stdout.flush
 	end
-elsif packages.length == 1
+elsif packages.length == 1 and Arson::Config["single_download"]
 	puts "Downloading #{packages.first['Name']}..."
 	Arson.download(packages.first)
 	exit 0
