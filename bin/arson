@@ -20,6 +20,10 @@ opts = OptionParser.new do |opts|
 		options[:upgrade] = true
 	end
 
+	opts.on("--debug", "Enable debugging statements") do
+		options[:debug] = true
+	end
+
 	opts.on_tail("-h", "--help", "Show this message") do
 		puts opts
 		exit 0
@@ -34,6 +38,7 @@ opts = OptionParser.new do |opts|
 
 end
 ARGV.empty? ? opts.parse!(["-h"]) : opts.parse!(ARGV)
+p ARGV if options[:debug]
 
 if options[:download] > 0 and ARGV.empty?
 	warn "Missing names of packages to download!"
@@ -58,6 +63,7 @@ elsif options[:download] > 0
 	exit_code = 0
 	ARGV.each do |pkg|
 		if pkg = Arson.find_exact(pkg)
+			p pkg if options[:debug]
 			puts "Downloading #{pkg['Name']}..."
 			Arson.download(pkg)
 		else
