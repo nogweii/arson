@@ -6,6 +6,8 @@ class Arson
 		def download(package, depends=false)
 			begin
 				real_download("http://aur.archlinux.org"+package['URLPath'])
+				dependences = File.readlines("#{Arson::Config["dir"]}/#{package['Name']}/PKGBUILD").grep(/^(?:make)*depends/).map{|l| l.match(/.*=\((.*)\)$/)[1].gsub("'", '').split(' ')}.flatten.uniq.sort.map{|dep| (dep.scan(/(.*?)[><=]{1,2}(.*)/).first || [dep]).first }
+				p dependences
 			rescue Errno::EEXIST => e
 				warn e.message
 				exit 2
