@@ -38,4 +38,7 @@ class Arson
 	end ] ) if File.exists? "/etc/pacman.d/color.conf"
 
 	PROGRAM = File.basename($0)
+
+	REPOSITORIES = File.read("/etc/pacman.conf").scan(/\[(.*)\]/).flatten
+	REPOSITORIES.shift # Remove '[options]'
 end
