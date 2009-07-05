@@ -3,11 +3,16 @@ class Arson
 		# +package+ is expected to be a Hash, matching the structure the AUR
 		# RPC returns.
 		# TODO: Add automatic dependency tracking (gleaned parsing the PKGBUILD)
-		def download(package, depends=false)
+		def download(package, depends=0)
 			begin
 				real_download("http://aur.archlinux.org"+package['URLPath'])
-				dependences = File.readlines("#{Arson::Config["dir"]}/#{package['Name']}/PKGBUILD").grep(/^(?:make)*depends/).map{|l| l.match(/.*=\((.*)\)$/)[1].gsub("'", '').split(' ')}.flatten.uniq.sort.map{|dep| (dep.scan(/(.*?)[><=]{1,2}(.*)/).first || [dep]).first }
-				p dependences
+				if depends > 0
+					dependences = File.readlines("#{Arson::Config["dir"]}/#{package['Name']}/PKGBUILD").grep(/^(?:make)*depends/).map{|l| l.match(/.*=\((.*)\)$/)[1].gsub("'", '').split(' ')}.flatten.uniq.sort.map{|dep| (dep.scan(/(.*?)[><=]{1,2}(.*)/).first || [dep]).first }
+					# Remove all those packages that are found in pacman's
+					# package database
+					dependences.reject { |depend| !is_sync?(depend) }
+					puts "Download #{dependences.size} dependences... #{dependences.inspect}"
+				end
 			rescue Errno::EEXIST => e
 				warn e.message
 				exit 2
