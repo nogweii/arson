@@ -1,3 +1,5 @@
+require 'find'
+
 class Arson
 	class << self
 		# Given an array of search parameters, return an array of hashes
@@ -39,6 +41,26 @@ class Arson
 			end
 
 			return nil
+		end
+
+		# Search for a package in pacman's local cache. If found, we
+		# presume that the package is one stored in a repository, not
+		# in the AUR.
+		#
+		# @returns [boolean] true or false
+		def in_sync?(pkg)
+			catch(:found) do
+				return true
+			end
+			Find.find(*Dir["/var/lib/pacman/sync/*"]) do |file|
+				base = File.basename(file)
+				if base =~ /^#{Regexp.escape(package_to_find)}-[\d\.-]+$/
+				throw :found
+				else
+					Find.prune unless repos.include? base
+				end
+			end
+			return false
 		end
 	end
 end
