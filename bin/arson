@@ -6,7 +6,15 @@ require 'arson'
 require 'arson/colorful'
 require 'optparse'
 
-Arson::Config.write unless File.exists? Arson::Config::FILE_PATH
+# Check if the YAML is outdated or doesn't exist. In either case, write the YAML
+# again.
+#
+# The YAML is considered 'outdated' if the user's YAML doesn't contain the same
+# keys as the defaults. We do not respect foreign keys however. Should fix that.
+if (Arson::Config::LOADED_YAML and (Arson::Config::LOADED_YAML.keys.sort != Arson::Config::DEFAULTS.keys.sort)) or !File.exists? Arson::Config::FILE_PATH
+	Arson::Config.write
+end
+
 
 options = {:download => 0}
 opts = OptionParser.new do |opts|
