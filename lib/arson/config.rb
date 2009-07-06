@@ -18,10 +18,13 @@ class Arson
 			MERGED[option.to_s]
 		end
 
+		# Write the merged YAML (the user's choices and the defaults) to
+		# the file.
 		def self.write
 			open(FILE_PATH, "w") do |file|
-				file.write(DEFAULTS.to_yaml)
+				file.write(MERGED.to_yaml)
 			end
 		end
+
 	end
 end
