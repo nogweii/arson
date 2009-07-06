@@ -6,7 +6,7 @@ class Arson
 		# The location of the configuration file (hard coded for now)
 		FILE_PATH = File.expand_path(File.join("~", ".arson.yaml"))
 		# The loaded configuration
-		LOADED_YAML = File.exists?(FILE_PATH) ? open(FILE_PATH) {|f| YAML::load(f) } : {}
+		LOADED_YAML = File.exists?(FILE_PATH) ? open(FILE_PATH) {|f| YAML::load(f) } : nil
 		# Default configuration values
 		DEFAULTS = {"dir" => File.expand_path("~"), "pacman" => true, "color" => true, "single_download" => false}
 		# Merged values representing a combination of the user's choices
