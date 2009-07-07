@@ -17,6 +17,7 @@ end
 
 
 options = {:download => 0}
+ARGV.unshift "-h" if ARGV.empty?
 opts = OptionParser.new do |opts|
 	opts.banner = "Usage: arson [options]"
 
@@ -44,8 +45,7 @@ opts = OptionParser.new do |opts|
 		exit 0
 	end
 
-end
-ARGV.empty? ? opts.parse!(["-h"]) : opts.parse!(ARGV)
+end.parse!
 p ARGV if options[:debug]
 
 if options[:download] > 0 and ARGV.empty?
