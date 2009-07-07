@@ -87,7 +87,7 @@ if packages.length > 1
 	packages.each do |pkg|
 		name = Arson.colorful("White", pkg['Name'])
 		name = Arson.colorful("Red", name) if pkg["OutOfDate"] == "1"
-		if Arson::Categories[pkg['CategoryID'].to_i] && Arson::Categories[pkg['CategoryID'].to_i] != "nil"
+		if Arson::Config["show_category"] and Arson::Categories[pkg['CategoryID'].to_i] and Arson::Categories[pkg['CategoryID'].to_i] != "nil"
 			category = "-#{Arson::Categories[pkg['CategoryID'].to_i]}"
 		else
 			category = ""
@@ -99,14 +99,17 @@ if packages.length > 1
 		HERE
 		$stdout.flush
 	end
-elsif packages.length == 1 and Arson::Config["single_download"]
+elsif packages.length == 1 and Arson::Config["download_on_single_result"]
+	p packages.first if options[:debug]
 	puts "Downloading #{packages.first['Name']}..."
 	Arson.download(packages.first)
 	exit 0
 end
 
 if Arson::Config["pacman"]
+	print ">> Running pacman" if options[:debug]
 	if File.exists? "/usr/bin/pacman-color" and Arson::Config["color"]
+		print "-color" if options[:debug]
 		exec "/usr/bin/pacman-color -Ss #{ARGV.join(' ')}"
 	else
 		exec "/usr/bin/pacman -Ss #{ARGV.join(' ')}"
