@@ -71,7 +71,6 @@ elsif options[:download] > 0
 	ARGV.each do |pkg|
 		if pkg = Arson.find_exact(pkg)
 			p pkg if options[:debug]
-			puts "Downloading #{pkg['Name']}..."
 			Arson.download(pkg)
 		else
 			warn "No such package '#{pkg}'"
@@ -99,7 +98,6 @@ if packages.length > 1
 	end
 elsif packages.length == 1 and Arson::Config["download_on_single_result"]
 	p packages.first if options[:debug]
-	puts "Downloading #{packages.first['Name']}..."
 	Arson.download(packages.first)
 	exit 0
 end
