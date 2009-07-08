@@ -53,7 +53,7 @@ opts = OptionParser.new do |opts|
 end.parse!
 p ARGV if options[:debug]
 
-if options[:download] > 0 and ARGV.empty?
+if options[:action] and ARGV.empty?
 	warn "arson: Missing names of packages"
 	exit 1
 end
