@@ -26,5 +26,13 @@ class Arson
 			end
 		end
 
+		# The correct directory to *output*, taking into account
+		# target_directory and directory_alias.
+		#
+		# Note: Always use target_directory as the path to put files in,
+		# or in the appropriate XDG directory.
+		def self.directory_name
+			return self["directory_alias"] or self["target_directory"]
+		end
 	end
 end
