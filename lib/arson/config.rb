@@ -22,7 +22,7 @@ class Arson
 			# Hash#merge() overwrites the value, even if it's an
 			# empty string or nil. Therefore, check if the user has a
 			# nil value in their configuration and update the hash.
-			if !value or value.empty?
+			if value.nil? or value.empty?
 				MERGED[option.to_s] = DEFAULTS[option.to_s]
 				@modified = true
 			end
