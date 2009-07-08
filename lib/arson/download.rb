@@ -17,6 +17,9 @@ class Arson
 			rescue Errno::EEXIST => e
 				warn e.message
 				exit 2
+			rescue SocketError => e
+				warn e.message
+				exit 2
 			end
 		end
 
