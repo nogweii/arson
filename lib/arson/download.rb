@@ -15,10 +15,10 @@ class Arson
 					puts "Download #{dependences.size} dependences... #{dependences.inspect}"
 				end
 			rescue Errno::EEXIST => e
-				warn e.message
+				warn "arson: #{e.message}"
 				exit 2
 			rescue SocketError => e
-				warn e.message
+				warn "arson: #{e.message}"
 				exit 2
 			end
 		end

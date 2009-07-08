@@ -54,7 +54,7 @@ end.parse!
 p ARGV if options[:debug]
 
 if options[:download] > 0 and ARGV.empty?
-	warn "Missing names of packages to download!"
+	warn "arson: Missing names of packages"
 	exit 1
 end
 
@@ -78,7 +78,7 @@ when :download
 			p pkg if options[:debug]
 			Arson.download(pkg)
 		else
-			warn "No such package '#{pkg}'"
+			warn "arson: No such package '#{pkg}'"
 			exit_code = 1
 		end
 	end
