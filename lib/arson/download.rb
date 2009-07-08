@@ -8,7 +8,7 @@ class Arson
 			begin
 				real_download("http://aur.archlinux.org"+package['URLPath'])
 				if depends > 0
-					dependences = File.readlines("#{Arson::Config["dir"]}/#{package['Name']}/PKGBUILD").grep(/^(?:make)*depends/).map{|l| l.match(/.*=\((.*)\)$/)[1].gsub("'", '').split(' ')}.flatten.uniq.sort.map{|dep| (dep.scan(/(.*?)[><=]{1,2}(.*)/).first || [dep]).first }
+					dependences = File.readlines("#{Arson::Config["target_directory"]}/#{package['Name']}/PKGBUILD").grep(/^(?:make)*depends/).map{|l| l.match(/.*=\((.*)\)$/)[1].gsub("'", '').split(' ')}.flatten.uniq.sort.map{|dep| (dep.scan(/(.*?)[><=]{1,2}(.*)/).first || [dep]).first }
 					# Remove all those packages that are found in pacman's
 					# package database
 					dependences.reject { |depend| !is_sync?(depend) }
@@ -31,7 +31,7 @@ class Arson
 		# After the file is downloaded, it is attempted to be unpacked using
 		# tar and gunzip formats.
 		def real_download(url)
-			Dir.chdir(Arson::Config["dir"]) do
+			Dir.chdir(Arson::Config["target_directory"]) do
 				open(url) do |tar|
 					# Write the stream to a file, b (binary) is JIC
 					File.open(File.basename(url), "wb") do |file|

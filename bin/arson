@@ -102,7 +102,7 @@ else
 end
 
 Arson::Config.write if Arson::Config.modified
-if Arson::Config["pacman"]
+if Arson::Config["run_pacman"]
 	print ">> Running pacman" if options[:debug]
 	if File.exists? "/usr/bin/pacman-color" and Arson::Config["color"]
 		print "-color" if options[:debug]
