@@ -58,7 +58,8 @@ if options[:download] > 0 and ARGV.empty?
 	exit 1
 end
 
-if options[:upgrade]
+case options[:action]
+when :upgrade
 	print "Checking for upgrades..."
 	upgrades = Arson.check_upgrades
 	unless upgrades.empty?
@@ -70,7 +71,7 @@ if options[:upgrade]
 		puts "Nothing to update"
 	end
 	exit 0
-elsif options[:download] > 0
+when :download
 	exit_code = 0
 	ARGV.each do |pkg|
 		if pkg = Arson.find_exact(pkg)
@@ -82,11 +83,9 @@ elsif options[:download] > 0
 		end
 	end
 	exit exit_code
-end
-
-packages = Arson.search(ARGV)
-if packages.length > 1
-	packages.each do |pkg|
+when :search
+else
+	Arson.search(ARGV).each do |pkg|
 		name = Arson.colorful("White", pkg['Name'])
 		name = Arson.colorful("Red", name) if pkg["OutOfDate"] == "1"
 		if Arson::Config["show_category"] and Arson::Categories[pkg['CategoryID'].to_i] and Arson::Categories[pkg['CategoryID'].to_i] != "nil"
