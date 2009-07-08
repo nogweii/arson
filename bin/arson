@@ -21,12 +21,17 @@ ARGV.unshift "-h" if ARGV.empty?
 opts = OptionParser.new do |opts|
 	opts.banner = "Usage: arson [options]"
 
+	opts.on("-s", "--search", "Search for packages") do
+		options[:action] ||= :search
+	end
+
 	opts.on("-d", "--download", "Download the exact package name", "Repeating this will download other depenedencies in AUR") do
+		options[:action] || :download
 		options[:download] += 1
 	end
 
 	opts.on("-u", "--upgrade", "Check for upgrades") do
-		options[:upgrade] = true
+		options[:action] ||= :upgrade
 	end
 
 	opts.on("--debug", "Enable debugging statements") do
