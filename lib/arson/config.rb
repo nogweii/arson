@@ -3,6 +3,8 @@ require 'yaml'
 class Arson
 	module Config
 
+		attr_reader :modified
+
 		# The location of the configuration file (hard coded for now)
 		FILE_PATH = File.expand_path(File.join("~", ".arson.yaml"))
 		# The loaded configuration
@@ -15,7 +17,17 @@ class Arson
 
 		# Returns the value for that configuration option (as a string)
 		def self.[](option)
-			MERGED[option.to_s]
+			value = MERGED[option.to_s]
+			
+			# Hash#merge() overwrites the value, even if it's an
+			# empty string or nil. Therefore, check if the user has a
+			# nil value in their configuration and update the hash.
+			if !value or value.empty?
+				MERGED[option.to_s] = DEFAULTS[option.to_s]
+				@modified = true
+			end
+
+			return value
 		end
 
 		# Write the merged YAML (the user's choices and the defaults) to

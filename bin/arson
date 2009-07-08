@@ -102,6 +102,7 @@ elsif packages.length == 1 and Arson::Config["download_on_single_result"]
 	exit 0
 end
 
+Arson::Config.write if Arson::Config.modified
 if Arson::Config["pacman"]
 	print ">> Running pacman" if options[:debug]
 	if File.exists? "/usr/bin/pacman-color" and Arson::Config["color"]
