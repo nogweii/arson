@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
 
 $:.unshift(File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib')))
+$stdout.sync = true
 
 require 'arson'
 require 'arson/colorful'
@@ -55,11 +56,9 @@ end
 
 if options[:upgrade]
 	print "Checking for upgrades..."
-	$stdout.flush
 	upgrades = Arson.check_upgrades
 	unless upgrades.empty?
 		print "\n"
-		$stdout.flush
 		upgrades.each do |line, new_version|
 			puts "#{line.strip} #{Arson.colorful("Green", new_version)}"
 		end
@@ -97,7 +96,6 @@ if packages.length > 1
 #{Arson.colorful("Magenta", "aur#{category}")}/#{name} #{Arson.colorful("Green",pkg['Version'])}
 	#{pkg['Description']}
 		HERE
-		$stdout.flush
 	end
 elsif packages.length == 1 and Arson::Config["download_on_single_result"]
 	p packages.first if options[:debug]
