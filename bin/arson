@@ -95,10 +95,6 @@ if packages.length > 1
 	#{pkg['Description']}
 		HERE
 	end
-elsif packages.length == 1 and Arson::Config["download_on_single_result"]
-	p packages.first if options[:debug]
-	Arson.download(packages.first)
-	exit 0
 end
 
 Arson::Config.write if Arson::Config.modified
