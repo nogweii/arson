@@ -18,5 +18,4 @@ build() {
   gem install --ignore-dependencies --no-rdoc --no-ri -i "$pkgdir/usr/lib/ruby/gems/1.8" -n "$pkgdir/usr/bin" $filename
 }
 
-
 # vim:set ts=2 sw=2 et:

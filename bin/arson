@@ -16,7 +16,6 @@ if (Arson::Config::LOADED_YAML and (Arson::Config::LOADED_YAML.keys.sort != Arso
 	Arson::Config.write
 end
 
-
 options = {:download => 0}
 ARGV.unshift "-h" if ARGV.empty?
 opts = OptionParser.new do |opts|
