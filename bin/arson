@@ -25,7 +25,7 @@ opts = OptionParser.new do |opts|
 		options[:action] ||= :search
 	end
 
-	opts.on("-d", "--download", "Download the exact package name", "Repeating this will download other depenedencies in AUR") do
+	opts.on("-d", "--download", "Download the exact package name", "Repeating this will download other dependencies in AUR") do
 		options[:action] || :download
 		options[:download] += 1
 	end
