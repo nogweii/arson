@@ -16,7 +16,8 @@ if (Arson::Config::LOADED_YAML and (Arson::Config::LOADED_YAML.keys.sort != Arso
 	Arson::Config.write
 end
 
-options = {:download => 0}
+options = Hash.new(nil)
+options[:download] = 0
 ARGV.unshift "-h" if ARGV.empty?
 opts = OptionParser.new do |opts|
 	opts.banner = "Usage: arson [options]"
@@ -83,8 +84,7 @@ when :download
 		end
 	end
 	exit exit_code
-when :search
-else
+when :search || nil
 	Arson.search(ARGV).each do |pkg|
 		name = Arson.colorful("White", pkg['Name'])
 		name = Arson.colorful("Red", name) if pkg["OutOfDate"] == "1"
