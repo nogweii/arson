@@ -3,7 +3,7 @@ require 'zlib'
 require 'rubygems'
 require 'json'
 require 'facets/ansicode'
-require 'facets/minitar'
+require 'archive/tar/minitar'
 require 'facets/version'
 
 require 'arson/version'
