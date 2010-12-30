@@ -3,16 +3,16 @@ class Arson
 		# +package+ is expected to be a Hash, matching the structure the AUR
 		# RPC returns.
 		# TODO: Add automatic dependency tracking (gleaned parsing the PKGBUILD)
-		def download(package, depends=0)
+		def download(package, get_dependencies=false)
 			puts "Downloading #{packages.first['Name']} to #{Arson::Config.directory_name}..."
 			begin
 				real_download("http://aur.archlinux.org"+package['URLPath'])
-				if depends > 0
-					dependences = File.readlines("#{Arson::Config["target_directory"]}/#{package['Name']}/PKGBUILD").grep(/^(?:make)*depends/).map{|l| l.match(/.*=\((.*)\)$/)[1].gsub("'", '').split(' ')}.flatten.uniq.sort.map{|dep| (dep.scan(/(.*?)[><=]{1,2}(.*)/).first || [dep]).first }
+				if get_dependencies
+					dependencies = File.readlines("#{Arson::Config["target_directory"]}/#{package['Name']}/PKGBUILD").grep(/^(?:make)*depends/).map{|l| l.match(/.*=\((.*)\)$/)[1].gsub("'", '').split(' ')}.flatten.uniq.sort.map{|dep| (dep.scan(/(.*?)[><=]{1,2}(.*)/).first || [dep]).first }
 					# Remove all those packages that are found in pacman's
 					# package database
-					dependences.reject { |depend| !is_sync?(depend) }
-					puts "Download #{dependences.size} dependences... #{dependences.inspect}"
+					dependencies.reject { |depend| !is_sync?(depend) }
+					puts "Download #{dependencies.size} dependencies... #{dependencies.inspect}"
 				end
 			rescue Errno::EEXIST => e
 				warn "arson: #{e.message}"
@@ -46,3 +46,5 @@ class Arson
 		end
 	end
 end
+
+# vim: sw=8 sts=8 noet

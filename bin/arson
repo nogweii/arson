@@ -91,8 +91,8 @@ when "upgrade"
 when "download"
 	ARGV.each do |pkg|
 		if pkg = Arson.find_exact(pkg)
-			p pkg if options[:debug]
-			Arson.download(pkg)
+			$Log.info "Downloading #{pkg}"
+			Arson.download(pkg, cmd_opts[:dependencies])
 		else
 			warn "arson: No such package '#{pkg}'"
 			exit 1
