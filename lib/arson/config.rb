@@ -23,7 +23,8 @@ class Arson
 			# Hash#merge() overwrites the value, even if it's an
 			# empty string or nil. Therefore, check if the user has a
 			# nil value in their configuration and update the hash.
-			if value.nil? or value.empty?
+			if value.nil? or (value.respond_to?(:empty?)
+                                          and value.empty?)
 				MERGED[optstr] = DEFAULTS[optstr]
 				@modified = true
 			end
