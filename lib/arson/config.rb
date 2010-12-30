@@ -17,13 +17,14 @@ class Arson
 
 		# Returns the value for that configuration option (as a string)
 		def self.[](option)
-			value = MERGED[option.to_s]
+                        optstr = option.to_s
+			value = MERGED[optstr]
 			
 			# Hash#merge() overwrites the value, even if it's an
 			# empty string or nil. Therefore, check if the user has a
 			# nil value in their configuration and update the hash.
 			if value.nil? or value.empty?
-				MERGED[option.to_s] = DEFAULTS[option.to_s]
+				MERGED[optstr] = DEFAULTS[optstr]
 				@modified = true
 			end
 
