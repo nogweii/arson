@@ -48,3 +48,5 @@ class Arson
 		end
 	end
 end
+
+# vim: sw=8 sts=8 et
