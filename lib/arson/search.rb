@@ -34,8 +34,14 @@ class Arson
 				#                    [Categories[pkg['CategoryID'].to_i],pkg['Name']] - Category name, then pkg name
 				hash["results"].sort_by{|pkg|[pkg['Name']]}.each do |pkg|
 					# Dir["/var/lib/pacman/sync/community/#{pkg['Name']}-*"].first
-					next if File.exists? "/var/lib/pacman/sync/community/#{pkg['Name']}-#{pkg['Version']}"
-					return pkg if pkg['Name'] == arg
+					if File.exists? "/var/lib/pacman/sync/community/#{pkg['Name']}-#{pkg['Version']}"
+						$Log.debug "Skipping in-sync package #{pkg['Name']}"
+					elsif pkg['Name'] == arg
+						$Log.debug "Exact match found: #{pkg}"
+						return pkg
+					else
+						$Log.debug "Skipping partial match: #{pkg['Name']}"
+					end
 				end
 			end
 
