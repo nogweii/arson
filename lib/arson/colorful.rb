@@ -5,14 +5,16 @@ class Arson
 			colored = ""
 			if color.is_a? String
 				Colors[color].each do |effect|
-					colored << "#{::ANSICode.send(effect)}"
+					colored << "#{::ANSI::Code.send(effect)}"
 				end
 			elsif color.is_a? Symbol
-				colored << "#{::ANSICode.send(color)}"
+				colored << "#{::ANSI::Code.send(color)}"
 			else
 				return colorful(color.to_s, string)
 			end
-			colored << (string || "") << "#{::ANSICode.clear}"
+			colored << (string || "") << "#{::ANSI::Code.clear}"
 		end
 	end
 end
+
+# vim: sw=8 sts=8 noet

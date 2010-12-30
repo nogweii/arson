@@ -2,7 +2,7 @@ require 'open-uri'
 require 'zlib'
 require 'rubygems'
 require 'json'
-require 'facets/ansicode'
+require 'ansi'
 require 'archive/tar/minitar'
 require 'versionomy'
 
