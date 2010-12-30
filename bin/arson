@@ -79,7 +79,7 @@ $Log.debug "Subcommand arguments: #{ARGV}"
 case cmd
 when "upgrade"
 	print "Checking for upgrades..."
-	upgrades = Arson.check_upgrades
+	upgrades = Arson.check_upgrades ARGV
 	unless upgrades.empty?
 		print "\n"
 		upgrades.each do |line, new_version|
@@ -89,6 +89,10 @@ when "upgrade"
 		puts "Nothing to update"
 	end
 when "download"
+	if ARGV.empty?
+		puts "No package names given"
+		exit 2
+	end
 	ARGV.each do |pkg|
 		if pkg = Arson.find_exact(pkg)
 			$Log.info "Downloading #{pkg}"
@@ -99,6 +103,10 @@ when "download"
 		end
 	end
 when "search"
+	if ARGV.empty?
+		puts "No search terms given"
+		exit 2
+	end
 	Arson.search(ARGV).each do |pkg|
 		name = Arson.colorful("White", pkg['Name'])
 		name = Arson.colorful("Red", name) if pkg["OutOfDate"] == "1"

@@ -5,10 +5,10 @@ class Arson
 		#
 		# Calls `pacman -Qm', and given each line, finds upgrades for
 		# that package.
-		def check_upgrades
+		def check_upgrades(packages = [])
 			upgradable = Hash.new
 
-			::IO.popen('pacman -Qm', ::IO::RDONLY) {|pm| pm.read.lines}.each do |line|
+			::IO.popen("pacman -Qm #{packages.join(' ')}", ::IO::RDONLY) {|pm| pm.read.lines}.each do |line|
 				name, version = line.chomp.split
 				result = find_exact(name)
 
