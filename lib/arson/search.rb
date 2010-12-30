@@ -27,7 +27,6 @@ class Arson
 		# Attempts to find an exact matching package in AUR
 		def find_exact(arg)
 			hash = JSON.parse(open("http://aur.archlinux.org/rpc.php?type=search&arg=#{URI.escape(arg)}").read)
-			packages = []
 
 			if hash["type"] == "search"
 
@@ -64,3 +63,5 @@ class Arson
 		end
 	end
 end
+
+# vim: sw=8 sts=8 noet
