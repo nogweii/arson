@@ -66,6 +66,9 @@ EOS
 Upgrade named  packages.
 EOS
 		   end
+	   else
+		   warn "Unknown command: #{cmd}"
+		   exit 1
 	   end
 
 $Log.level = Logger::INFO if global_opts[:verbose]
