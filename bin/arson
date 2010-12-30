@@ -5,11 +5,12 @@ $stdout.sync = true
 
 require 'arson'
 require 'arson/colorful'
-require 'optparse'
+require 'trollop'
 require 'logger'
 
 $Log = Logger.new STDOUT
 $Log.level = Logger::WARN
+$Log.progname = "Arson"
 
 # Check if the YAML is outdated or doesn't exist. In either case, write the YAML
 # again.
@@ -20,51 +21,63 @@ if (Arson::Config::LOADED_YAML and (Arson::Config::LOADED_YAML.keys.sort != Arso
 	Arson::Config.write
 end
 
-options = Hash.new(nil)
-options[:download] = 0
-ARGV.unshift "-h" if ARGV.empty?
-opts = OptionParser.new do |opts|
-	opts.banner = "Usage: arson [options]"
+global_opts = Trollop::options do
+	version <<-EOS
+arson v#{Arson::VERSION.join('.')}
+Copyright (C) 2008 Colin Shea <colin@evaryont.me>
+Licensed under the GPLv3, all rights reserved
+EOS
+	banner <<-EOS
+Arson, the hot AUR search helper.
 
-	opts.on("-s", "--search", "Search for packages") do
-		options[:action] ||= :search
-	end
+Usage: arson [ OPTIONS ] search TERM
+       arson [ OPTIONS ] download PACKAGE [ PACKAGE ... ]
+       arson [ OPTIONS ] upgrade [ PACKAGE ... ]
 
-	opts.on("-d", "--download", "Download the exact package name", "Repeating this will download other dependencies in AUR") do
-		options[:action] || :download
-		options[:download] += 1
-	end
+For help on individual commands, try 'arson COMMAND --help'.
 
-	opts.on("-u", "--upgrade", "Check for upgrades") do
-		options[:action] ||= :upgrade
-	end
-
-	opts.on("--debug", "Enable debugging statements") do
-		options[:debug] = true
-	end
-
-	opts.on_tail("-h", "--help", "Show this message") do
-		puts opts
-		exit 0
-	end
-
-	opts.on_tail("--version", "Show version") do
-		puts "arson v#{Arson::VERSION.join('.')}"
-		puts "Copyright (C) 2008 Colin Shea <colin@evaryont.me>"
-		puts "Licensed under the GPLv3, all rights reserved"
-		exit 0
-	end
-
-end.parse!
-p ARGV if options[:debug]
-
-if options[:action] and ARGV.empty?
-	warn "arson: Missing names of packages"
-	exit 1
+OPTIONS can be one or more of the following:
+EOS
+	opt :verbose, "Be more verbose", :short => '-v'
+	opt :debug, "Be even more verbose", :short => '-d'
+	stop_on %w(search download upgrade)
 end
 
-case options[:action]
-when :upgrade
+cmd = ARGV.shift
+cmd_opts = case cmd
+	   when 'search'
+		   Trollop::options do
+			   banner <<-EOS
+Search for packages whose names contain the search term.
+EOS
+		   end
+	   when 'download'
+		   Trollop::options do
+			   banner <<-EOS
+Download named packages.
+
+Options:
+EOS
+			   opt :dependencies, "Also download direct dependencies", :short => '-D'
+		   end
+	   when 'upgrade'
+		   Trollop::options do
+			   banner <<-EOS
+Upgrade named  packages.
+EOS
+		   end
+	   end
+
+$Log.level = Logger::INFO if global_opts[:verbose]
+$Log.level = Logger::DEBUG if global_opts[:debug]
+
+$Log.debug "Global options: #{global_opts}"
+$Log.debug "Subcommand: #{cmd}"
+$Log.debug "Subcommand options: #{cmd_opts}"
+$Log.debug "Subcommand arguments: #{ARGV}"
+
+case cmd
+when "upgrade"
 	print "Checking for upgrades..."
 	upgrades = Arson.check_upgrades
 	unless upgrades.empty?
@@ -75,20 +88,17 @@ when :upgrade
 	else
 		puts "Nothing to update"
 	end
-	exit 0
-when :download
-	exit_code = 0
+when "download"
 	ARGV.each do |pkg|
 		if pkg = Arson.find_exact(pkg)
 			p pkg if options[:debug]
 			Arson.download(pkg)
 		else
 			warn "arson: No such package '#{pkg}'"
-			exit_code = 1
+			exit 1
 		end
 	end
-	exit exit_code
-when :search || nil
+when "search"
 	Arson.search(ARGV).each do |pkg|
 		name = Arson.colorful("White", pkg['Name'])
 		name = Arson.colorful("Red", name) if pkg["OutOfDate"] == "1"
@@ -115,3 +125,5 @@ if Arson::Config["run_pacman"]
 		exec "/usr/bin/pacman -Ss #{ARGV.join(' ')}"
 	end
 end
+
+# vim: sw=8 sts=8 noet
