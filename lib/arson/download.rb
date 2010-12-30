@@ -4,7 +4,7 @@ class Arson
 		# RPC returns.
 		# TODO: Add automatic dependency tracking (gleaned parsing the PKGBUILD)
 		def download(package, get_dependencies=false)
-			puts "Downloading #{packages.first['Name']} to #{Arson::Config.directory_name}..."
+			puts "Downloading #{package['Name']} to #{Arson::Config.directory_name}..."
 			begin
 				real_download("http://aur.archlinux.org"+package['URLPath'])
 				if get_dependencies
