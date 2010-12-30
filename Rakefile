@@ -21,6 +21,7 @@ begin
 		gemspec.add_dependency('json', '>= 1.1.3')
 		gemspec.add_dependency('facets', '>= 2.5.1')
 		gemspec.add_dependency('archive-tar-minitar', '>= 0.5.2')
+		gemspec.add_dependency('versionomy', '>= 0.4.0')
 	end
 rescue LoadError
 	puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"

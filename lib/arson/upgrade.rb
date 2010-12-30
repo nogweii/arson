@@ -13,7 +13,7 @@ class Arson
 				result = find_exact(name)
 
 				if result
-					if ::VersionNumber.new(result['Version']) > ::VersionNumber.new(version)
+					if ::Versiononmy::parse(result['Version']) > ::Versionomy::parse(version)
 						upgradable[line] = result['Version']
 					end
 				end
@@ -24,3 +24,5 @@ class Arson
 
 	end
 end
+
+# vim: sw=8 sts=8 noet

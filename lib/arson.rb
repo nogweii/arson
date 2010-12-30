@@ -4,7 +4,7 @@ require 'rubygems'
 require 'json'
 require 'facets/ansicode'
 require 'archive/tar/minitar'
-require 'facets/version'
+require 'versionomy'
 
 require 'arson/version'
 require 'arson/config'
