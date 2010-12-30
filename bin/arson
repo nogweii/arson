@@ -6,6 +6,10 @@ $stdout.sync = true
 require 'arson'
 require 'arson/colorful'
 require 'optparse'
+require 'logger'
+
+$Log = Logger.new STDOUT
+$Log.level = Logger::WARN
 
 # Check if the YAML is outdated or doesn't exist. In either case, write the YAML
 # again.
