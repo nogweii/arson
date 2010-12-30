@@ -63,7 +63,8 @@ EOS
 	   when 'upgrade'
 		   Trollop::options do
 			   banner <<-EOS
-Upgrade named  packages.
+Look for upgradeable packages. If no package names are given, search
+for upgrades to all packages installed from AUR.
 EOS
 		   end
 	   else
