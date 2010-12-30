@@ -42,3 +42,5 @@ end
 CLASS
 	end
 end
+
+# vim: sw=8 sts=8 noet
