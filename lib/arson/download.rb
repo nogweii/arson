@@ -11,7 +11,7 @@ class Arson
 					dependencies = File.readlines("#{Arson::Config["target_directory"]}/#{package['Name']}/PKGBUILD").grep(/^(?:make)*depends/).map{|l| l.match(/.*=\((.*)\)$/)[1].gsub("'", '').split(' ')}.flatten.uniq.sort.map{|dep| (dep.scan(/(.*?)[><=]{1,2}(.*)/).first || [dep]).first }
 					# Remove all those packages that are found in pacman's
 					# package database
-					dependencies.reject { |depend| !is_sync?(depend) }
+					dependencies.reject { |depend| available_via_pacman?(depend) }
 					puts "Download #{dependencies.size} dependencies... #{dependencies.inspect}"
 				end
 			rescue Errno::EEXIST => e

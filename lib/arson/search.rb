@@ -34,7 +34,7 @@ class Arson
 				#                    [Categories[pkg['CategoryID'].to_i],pkg['Name']] - Category name, then pkg name
 				hash["results"].sort_by{|pkg|[pkg['Name']]}.each do |pkg|
 					# Dir["/var/lib/pacman/sync/community/#{pkg['Name']}-*"].first
-					if File.exists? "/var/lib/pacman/sync/community/#{pkg['Name']}-#{pkg['Version']}"
+					if available_via_pacman?(pkg['Name'], pkg['Version'])
 						$Log.debug "Skipping in-sync package #{pkg['Name']}"
 					elsif pkg['Name'] == arg
 						$Log.debug "Exact match found: #{pkg}"
@@ -53,19 +53,16 @@ class Arson
 		# in the AUR.
 		#
 		# @returns [boolean] true or false
-		def in_sync?(pkg)
-			catch(:found) do
-				return true
+		def available_via_pacman?(pkg, version=nil)
+			found = Dir["/var/lib/pacman/sync/#{pkg}*"].find_all do |d|
+				versionmatcher = if version.nil?
+							 '[\d\.-]+'
+						 else
+							 Regexp.escape(version)
+					d =~ /^#{Regexp.escape(pkg)}-#{versionmatcher}$/
+						 end
 			end
-			Find.find(*Dir["/var/lib/pacman/sync/*"]) do |file|
-				base = File.basename(file)
-				if base =~ /^#{Regexp.escape(package_to_find)}-[\d\.-]+$/
-				throw :found
-				else
-					Find.prune unless repos.include? base
-				end
-			end
-			return false
+			return !found.empty?
 		end
 	end
 end
