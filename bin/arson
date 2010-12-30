@@ -101,7 +101,7 @@ when :search || nil
 	end
 end
 
-Arson::Config.write if Arson::Config.modified
+Arson::Config.write if Arson::Config.modified?
 if Arson::Config["run_pacman"]
 	print ">> Running pacman" if options[:debug]
 	if File.exists? "/usr/bin/pacman-color" and Arson::Config["color"]

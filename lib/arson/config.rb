@@ -3,7 +3,11 @@ require 'yaml'
 class Arson
 	module Config
 
-		attr_reader :modified
+                @@modified = false
+                
+                def self.modified?
+                        @@modified
+                end
 
 		# The location of the configuration file (hard coded for now)
 		FILE_PATH = File.expand_path(File.join("~", ".arson.yaml"))
@@ -26,7 +30,7 @@ class Arson
 			if value.nil? or (value.respond_to?(:empty?)
                                           and value.empty?)
 				MERGED[optstr] = DEFAULTS[optstr]
-				@modified = true
+				@@modified = true
 			end
 
 			return value
