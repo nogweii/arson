@@ -23,6 +23,7 @@ begin
 		gemspec.add_dependency('versionomy', '>= 0.4.0')
 		gemspec.add_dependency('ansi', '>= 1.2.2')
 		gemspec.add_dependency('trollop', '>= 1.16.2')
+		gemspec.add_dependency('simple_progressbar', '>= 0.1.3')
 	end
 rescue LoadError
 	puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"

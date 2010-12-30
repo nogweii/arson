@@ -5,6 +5,7 @@ require 'json'
 require 'ansi'
 require 'archive/tar/minitar'
 require 'versionomy'
+require 'simple_progressbar'
 
 require 'arson/version'
 require 'arson/config'

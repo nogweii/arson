@@ -8,15 +8,20 @@ class Arson
 		def check_upgrades(packages = [])
 			upgradable = Hash.new
 
-			::IO.popen("pacman -Qm #{packages.join(' ')}", ::IO::RDONLY) {|pm| pm.read.lines}.each do |line|
-				name, version = line.chomp.split
-				result = find_exact(name)
+			pkgs = ::IO.popen("pacman -Qm #{packages.join(' ')}", ::IO::RDONLY) {|pm| pm.read.lines}.to_a.map {|p| p.chomp}
+			SimpleProgressbar.new.show("Looking for upgrades") do
+				pkgs.each_with_index do |line, index|
+					name, version = line.split
+					result = find_exact(name)
 
-				if result
-					if ::Versiononmy::parse(result['Version']) > ::Versionomy::parse(version)
-						upgradable[line] = result['Version']
+					if result
+						if ::Versiononmy::parse(result['Version']) > ::Versionomy::parse(version)
+							upgradable[line] = result['Version']
+						end
 					end
+					progress ((index.to_f / pkgs.length) * 100).ceil
 				end
+				progress 100
 			end
 
 			upgradable#.any? ? download(upgradable) : say('Nothing to update')
