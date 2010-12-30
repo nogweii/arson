@@ -15,7 +15,7 @@ class Arson
 					result = find_exact(name)
 
 					if result
-						if ::Versiononmy::parse(result['Version']) > ::Versionomy::parse(version)
+						if ::Versionomy::parse(result['Version']) > ::Versionomy::parse(version)
 							upgradable[line] = result['Version']
 						end
 					end
